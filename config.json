@@ -3,5 +3,5 @@
     "fertility_rate": 1.6, 
     "duel_fatality": 0.3, 
     "natural_fatality": 0.02,
-    "crowd_threshold": 6
+    "crowd_threshold": 5
 }

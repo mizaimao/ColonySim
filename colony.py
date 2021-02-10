@@ -96,9 +96,19 @@ class Colony:
         spore_counter = 0
         events = {}
         for coor, spores_in_tile in self.step.items():
-            
             encounter = False
             crowd_size = len(spores_in_tile)
+
+            if crowd_size > cfg.crowd_threshold: # too crowded, triggering extinct on tile
+                print("a crowd of spores dead caused by famine,", crowd_size)
+                for spore_id in spores_in_tile:
+                    del self.spores[spore_id]
+                        
+                self.current_pop -= crowd_size
+                spore_counter += crowd_size
+                continue
+
+
             if crowd_size > 1:
                 encounter = True 
 
@@ -147,7 +157,4 @@ class Colony:
                 print("a new baby was born, pop:", self.current_pop)
 
         self.step = new_step
-
-
-    
 
