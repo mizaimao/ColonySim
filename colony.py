@@ -1,9 +1,9 @@
 import json
 import numpy as np
 from spore import Spore
-from step_progression import spore_step, validate_coor
+from step_progression import spore_step, validate_coor, event_handler
 
-sex_mapper = {1: "A", 2: "a", 3: "b", 4: "B"}
+sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}
 
 class Colony:
     """
@@ -40,7 +40,7 @@ class Colony:
             if i % 2 == 0:
                 sex = 1
             else: 
-                sex = 4
+                sex = 3
 
             self._create_individual(sex=sex)
 
@@ -83,7 +83,7 @@ class Colony:
             dict -- next step 
         """
         # save current step
-        if self.enable_historyd:
+        if self.enable_history:
             self.step_record.append(self.step.copy())
 
         new_step = {}
@@ -92,13 +92,14 @@ class Colony:
         
         spore_counter = 0
         for coor, spores_in_tile in self.step.items():
-            """
-            event_trigger = False
-            if len(spores_in_tile) > 1:
-                event_trigger = True 
 
+            if len(spores_in_tile) > 1:
+                # select two spores
                 chosen_ids = np.random.choice(spores_in_tile, size = 2, replace=False)
-            """
+                # get result of their encounter
+                event_results = event_handler(self.spores[chosen_ids[0]], self.spores[chosen_ids[1]])
+                print(event_results)
+
             for spore_id in spores_in_tile:
                 next_direction = next_directions[spore_counter]
                 while True: # do-while loop in python

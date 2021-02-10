@@ -1,4 +1,18 @@
+import json
+from dataclasses import dataclass
 import numpy as np
+from spore import Spore
+
+
+@dataclass
+class Config:
+    def __init__(self, config: dict):
+        self.one_night_chance = config["one_night_chance"]
+        self.fertility_rate = config["fertility_rate"]
+        self.duel_fatality = config["duel_fatality"]
+        self.natural_fatality =config["duel_fatality"]
+cfg = Config(json.load(open('config.json', 'r')))
+
 
 def spore_step(direction: int, current_coor: tuple):
     """
@@ -27,11 +41,71 @@ def spore_step(direction: int, current_coor: tuple):
         raise NotImplementedError("Unknown direction", direction)
 
 
-
 def validate_coor(x_low: int, x_high: int, y_low: int, y_high: int, coor: tuple):
+    """
+    To verify if the generated coor are inside map
+    """
     x, y = coor
     if x_low <= x < x_high and y_low <= y < y_high:
         return True
     return False 
 
     
+def determine_event(sex_a: int, sex_b: int):
+    """
+    Determine event based on sex of two spores.
+
+    Returns:
+        int -- event code
+    """
+    # sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}
+    # event_mapper = {1: "fight", 2: "proliferate", 0: "nothing"}
+    if sex_a == 1:
+        if sex_b == 3:
+            return 2
+        if sex_b == 1:
+            return 1
+
+    if sex_b == 1:
+        if sex_a == 3:
+            return 2
+    
+    return 0
+
+
+def event_handler(a: Spore, b: Spore):
+    """
+    Generate event result of two spores.
+
+    Args:
+        a, b {Spore} -- two interactive spores 
+
+    Returns:
+
+    """
+    event_code = determine_event(a.sex, b.sex)
+    if event_code == 0:
+        return [True, True], 0
+
+    elif event_code == 1: # fight
+        fatality = cfg.duel_fatality
+        probs = np.random.random(2)
+        a_survives = True
+        b_survices = True 
+        if probs[0] <= fatality: # fatal fight
+            a_survives = False
+        if probs[1] < fatality: # a dies
+            b_survices = False 
+        return [a_survives, b_survices], 0
+        
+    elif event_code == 2: # proliforate 
+        probs = np.random.random()
+        new_born = 0
+        if probs <= cfg.one_night_chance:
+            new_born += 1
+        return [True, True], new_born
+
+    else:
+        raise NotImplementedError()
+
+
