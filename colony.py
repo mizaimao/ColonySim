@@ -1,7 +1,7 @@
-import json
 import numpy as np
 from spore import Spore
-from step_progression import spore_step, validate_coor, event_handler
+from step_progression import *
+from configuration import cfg
 
 sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}
 
@@ -42,20 +42,23 @@ class Colony:
             else: 
                 sex = 3
 
-            self._create_individual(sex=sex)
+            self._create_individual(sex=sex, step_dict=self.step)
 
         
-    def _create_individual(self, sex: int):
-        # get a fresh pair of coor
-        x = np.random.randint(low=0, high=self.width)
-        y = np.random.randint(low=0, high=self.height)
-        
-        # roll the coor of spore
-        if self.allow_init_overlapping == False:
-            while (x, y) in self.step:
-                x = np.random.randint(low=0, high=self.width)
-                y = np.random.randint(low=0, high=self.height)
-        
+    def _create_individual(self, sex: int, coor: tuple = None, step_dict = None):
+        if coor is None:
+            # get a fresh pair of coor
+            x = np.random.randint(low=0, high=self.width)
+            y = np.random.randint(low=0, high=self.height)
+            
+            # roll the coor of spore
+            if self.allow_init_overlapping == False:
+                while (x, y) in step_dict:
+                    x = np.random.randint(low=0, high=self.width)
+                    y = np.random.randint(low=0, high=self.height)
+        else: 
+            x, y = coor
+
         # create a spore and add it 
         s = Spore(sid=self.id_counter, sex=sex)
         # add spore pointer
@@ -63,9 +66,9 @@ class Colony:
 
         # add spore to step
         try:
-            self.step[(x, y)].append(s.sid)
+            step_dict[(x, y)].append(s.sid)
         except KeyError:
-            self.step[(x, y)] = [s.sid]
+            step_dict[(x, y)] = [s.sid]
 
         self.id_counter += 1
         self.current_pop += 1
@@ -88,25 +91,43 @@ class Colony:
 
         new_step = {}
         
-        next_directions = np.random.randint(low=0, high=9, size=self.current_pop)
+        next_directions = get_direction(size=self.current_pop)
         
         spore_counter = 0
+        events = {}
         for coor, spores_in_tile in self.step.items():
+            
+            encounter = False
+            crowd_size = len(spores_in_tile)
+            if crowd_size > 1:
+                encounter = True 
 
-            if len(spores_in_tile) > 1:
                 # select two spores
                 chosen_ids = np.random.choice(spores_in_tile, size = 2, replace=False)
                 # get result of their encounter
                 event_results = event_handler(self.spores[chosen_ids[0]], self.spores[chosen_ids[1]])
-                print(event_results)
+                survival_dict = {chosen_ids[0]: event_results[0][0],
+                                chosen_ids[1]: event_results[0][1]}
+                
+                events[coor] = (survival_dict, event_results[1])
 
             for spore_id in spores_in_tile:
+                if encounter:
+                    try:
+                        survived = survival_dict[spore_id]
+                    except KeyError:
+                        survived = True
+                    
+                    if not survived:
+                        del self.spores[spore_id]
+                        print("a spore dead")
+                        self.current_pop -= 1
+                        spore_counter += 1
+                        continue
+
                 next_direction = next_directions[spore_counter]
-                while True: # do-while loop in python
-                    new_coor = spore_step(direction = next_direction, current_coor = coor)
-                    if validate_coor(0, self.width, 0, self.height, new_coor):
-                        break
-                    next_direction = np.random.randint(low=0, high=9)
+                new_coor = get_next_coor(next_direction, coor, self.width, self.height)
+
 
                 try:
                     new_step[new_coor].append(spore_id)
@@ -114,6 +135,16 @@ class Colony:
                     new_step[new_coor] = [spore_id]
 
                 spore_counter += 1
+
+        for coor, (survival_dict, new_born) in events.items():
+            for new_born in range(event_results[1]):
+                sex = 1 if np.random.random() <= 0.5 else 3
+                neary_by_coor = get_next_coor(get_direction(), coor, self.width, self.height)
+
+                self._create_individual(sex=sex,
+                                        coor=neary_by_coor,
+                                        step_dict=new_step)
+                print("a new baby was born, pop:", self.current_pop)
 
         self.step = new_step
 

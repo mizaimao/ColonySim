@@ -1,6 +1,8 @@
 import numpy as np
 from colony import Colony
 
+color_dict = {1: (0, 0, 255), 3: (255, 0, 0)}
+
 def convert_step_to_array(colony: Colony, multiplier: float = 30.0):
     """
     Visualize a single step in colony.
@@ -19,7 +21,9 @@ def convert_step_to_array(colony: Colony, multiplier: float = 30.0):
         y_end = int((y+1) * multiplier)
         #print(x_start, x_end, y_start, y_end)
 
-        frame[y_start:y_end, x_start:x_end] = (0, 0, 255)
+        top_spore = colony.spores[spores[0]]
+
+        frame[y_start:y_end, x_start:x_end] = color_dict[top_spore.sex]
         #frame[x_start:x_end, y_start:y_endd] = (0, 0, 255)
 
     return frame

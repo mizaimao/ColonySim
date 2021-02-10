@@ -1,18 +1,7 @@
-import json
-from dataclasses import dataclass
 import numpy as np
 from spore import Spore
 
-
-@dataclass
-class Config:
-    def __init__(self, config: dict):
-        self.one_night_chance = config["one_night_chance"]
-        self.fertility_rate = config["fertility_rate"]
-        self.duel_fatality = config["duel_fatality"]
-        self.natural_fatality =config["duel_fatality"]
-cfg = Config(json.load(open('config.json', 'r')))
-
+from configuration import cfg
 
 def spore_step(direction: int, current_coor: tuple):
     """
@@ -108,4 +97,15 @@ def event_handler(a: Spore, b: Spore):
     else:
         raise NotImplementedError()
 
+
+def get_direction(size: int = 1):
+    return np.random.randint(low=0, high=9, size=size)
+
+def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: int):
+    while True: # do-while loop in python
+        new_coor = spore_step(direction = next_direction, current_coor = current_coor)
+        if validate_coor(0, width, 0, height, new_coor):
+            break
+        next_direction = get_direction(size=1)
+    return new_coor
 
