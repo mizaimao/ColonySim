@@ -12,12 +12,12 @@ def convert_step_to_array(colony: Colony, multiplier: float = 30.0):
     spore_side = int(multiplier)
 
     for (x, y), spores in colony.step.items():
-        print(x, y)
+        #print(x, y)
         x_start = int(x * multiplier)
         x_end = int((x+1) * multiplier)
         y_start = int(y * multiplier)
         y_end = int((y+1) * multiplier)
-        print(x_start, x_end, y_start, y_end)
+        #print(x_start, x_end, y_start, y_end)
 
         frame[y_start:y_end, x_start:x_end] = (0, 0, 255)
         #frame[x_start:x_end, y_start:y_endd] = (0, 0, 255)
