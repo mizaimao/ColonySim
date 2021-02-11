@@ -6,7 +6,6 @@ import numpy as np
 
 from colony import Colony
 from step_visulizer import *
-from population_plotter import PopulationCurve
 
 X = 32
 Y = 20
@@ -21,11 +20,12 @@ if __name__ == '__main__':
         y = Y
 
     chicken_col = Colony(width=X, height=Y, init_pop=INIT_POP, seed=0)
-    # obj for plotting pop curve
-    pop_curve = PopulationCurve()
     cycle_counter = -1
+
+    # plotting object
+    visualizer = StepVisulizer(chicken_col)
     # a is an np array
-    a = convert_step_to_array(chicken_col, cycle=cycle_counter, pop_curve=pop_curve)
+    a = visualizer.plot_step(cycle=cycle_counter)
     cv2.imshow('image', a) 
     
     k = ord('n')
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         cycle_counter += 1
         
         chicken_col.progress_a_step()
-        a = convert_step_to_array(chicken_col, cycle=cycle_counter, pop_curve=pop_curve)
+        a = visualizer.plot_step(cycle=cycle_counter)
         cv2.imshow('image', a) 
         k = cv2.waitKey(0)
     cv2.destroyAllWindows()
