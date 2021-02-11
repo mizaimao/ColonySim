@@ -70,7 +70,8 @@ def event_handler(a: Spore, b: Spore):
         a, b {Spore} -- two interactive spores 
 
     Returns:
-
+        [bool, bool] -- if the two spores survive
+        int -- number of newborns
     """
     event_code = determine_event(a.sex, b.sex)
     if event_code == 0:
@@ -99,9 +100,15 @@ def event_handler(a: Spore, b: Spore):
 
 
 def get_direction(size: int = 1):
+    """
+    Get a random number representing eight directions (1-8) or stay (0)
+    """
     return np.random.randint(low=0, high=9, size=size)
 
 def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: int):
+    """
+    Generate the coor of the next step. Only returns valid coor
+    """
     while True: # do-while loop in python
         new_coor = spore_step(direction = next_direction, current_coor = current_coor)
         if validate_coor(0, width, 0, height, new_coor):

@@ -27,8 +27,8 @@ class PopulationCurve:
 
     def update_and_plot(self, point: int):
         """
-        Soak a new value and add to queue, also return the
-        updated plot.
+        Intake a new value and add to queue, then make a plot and 
+        and return it
         """
         # if reaches the max size, remove the first element
         if len(self.data) == (self.width - 1):
@@ -40,6 +40,7 @@ class PopulationCurve:
         # update high
         self.prev_high = max(self.prev_high, point)
 
+        # iterate through the heights in reversed order and plot dots
         plot = np.full((self.height, self.width, 3), 230, dtype=np.uint8)
         for ri, value in enumerate(self.data[::-1]): # reversed index
             plot[self.plottable_height - int(value/self.prev_high*self.plottable_height), self.width - ri - 1] = (80, 30, 00)

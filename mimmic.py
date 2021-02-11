@@ -22,12 +22,12 @@ if __name__ == '__main__':
         y = Y
 
     mode = 'interactive'
-    mode = 'dump'
+    #mode = 'dump'
 
     # create a colony
     chicken_col = Colony(width=X, height=Y, init_pop=INIT_POP, seed=0)
     # plotting object
-    visualizer = StepVisulizer(chicken_col, multiplier=15)
+    visualizer = StepVisulizer(chicken_col, multiplier=45)
     
     cycle_counter = -1
 
