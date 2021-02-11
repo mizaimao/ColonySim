@@ -15,6 +15,10 @@ class StepVisulizer:
         # fixed values
         self.frame_height = int((colony.height) * multiplier) 
         self.frame_width = int((colony.width) * multiplier)
+        self.font_scalar = 0.05 * multiplier
+        self.font_space = int(5 / 3 * multiplier)
+        self.font_above = int(5 / 3 * multiplier)
+        self.font_front = int(2 / 3 * multiplier)
         # displaying info 
         self.info_pane_height = int(self.frame_height * 0.2) 
         self.left_info_pane_width = int(self.frame_width / 2)
@@ -47,16 +51,16 @@ class StepVisulizer:
         left_info = np.full((self.info_pane_height, self.left_info_pane_width, 3), 220, dtype=np.uint8)
         cv2.putText(left_info, 
             "Colony Size: {}".format(self.colony.current_pop),  # text
-            (20, 50),  # pos
+            (self.font_front, self.font_above),  # pos
             cv2.FONT_HERSHEY_SIMPLEX, # font
-            1.5, # scale
+            self.font_scalar, # scale
             (100, 100, 100), # front color
             3)  # linetype
         cv2.putText(left_info, 
             "Cycle: {}".format(cycle),  # text
-            (20, 100),  # pos
+            (self.font_front, self.font_above + self.font_space),  # pos
             cv2.FONT_HERSHEY_SIMPLEX, # font
-            1.5, # scale
+            self.font_scalar, # scale
             (100, 100, 100), # front color
             3)  # linetype
             
