@@ -3,10 +3,19 @@ import cv2
 
 
 class PopulationCurve:
+    """
+    Plot a curve (more precisely, a series of discreted dots)
+    """
     def __init__(self):
+        """
+        Create the object without proper setup (placeholder)
+        """
         self.initialized = False
 
     def setup(self, width: int, height: int):
+        """
+        Now initialize formally the object
+        """
         self.width = width
         self.height = height
         self.plottable_height = int(self.height * 0.90)
@@ -31,7 +40,7 @@ class PopulationCurve:
         # update high
         self.prev_high = max(self.prev_high, point)
 
-        plot = np.full((self.height, self.width, 3), 240, dtype=np.uint8)
+        plot = np.full((self.height, self.width, 3), 230, dtype=np.uint8)
         for ri, value in enumerate(self.data[::-1]): # reversed index
             plot[self.plottable_height - int(value/self.prev_high*self.plottable_height), self.width - ri - 1] = (80, 30, 00)
         

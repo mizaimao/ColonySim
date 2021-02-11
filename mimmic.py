@@ -19,13 +19,14 @@ if __name__ == '__main__':
         x = X
         y = Y
 
+    # create a colony
     chicken_col = Colony(width=X, height=Y, init_pop=INIT_POP, seed=0)
-    cycle_counter = -1
-
+    
     # plotting object
-    visualizer = StepVisulizer(chicken_col)
-    # a is an np array
-    a = visualizer.plot_step(cycle=cycle_counter)
+    visualizer = StepVisulizer(chicken_col, multiplier=50)
+    
+    cycle_counter = -1
+    a = visualizer.plot_step(cycle=cycle_counter) # returns an np.array
     cv2.imshow('image', a) 
     
     k = ord('n')

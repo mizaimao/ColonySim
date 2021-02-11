@@ -46,6 +46,9 @@ class Colony:
 
         
     def _create_individual(self, sex: int, coor: tuple = None, step_dict = None):
+        """
+        Create a new spore with given sex (required) and coor (optional)
+        """
         if coor is None:
             # get a fresh pair of coor
             x = np.random.randint(low=0, high=self.width)
@@ -89,17 +92,22 @@ class Colony:
         if self.enable_history:
             self.step_record.append(self.step.copy())
 
-        new_step = {}
-        
+        # processed step placeholder
+        new_step = {} 
+
+        # generate spres' next move in a batch
         next_directions = get_direction(size=self.current_pop)
         
         spore_counter = 0
         events = {}
+        
+        # process spores by tile
         for coor, spores_in_tile in self.step.items():
             encounter = False
             crowd_size = len(spores_in_tile)
 
-            if crowd_size > cfg.crowd_threshold: # too crowded, triggering extinct on tile
+            # too crowded, triggering extinct on tile
+            if crowd_size > cfg.crowd_threshold: 
                 print("a crowd of spores dead caused by famine,", crowd_size)
                 for spore_id in spores_in_tile:
                     del self.spores[spore_id]
@@ -108,7 +116,7 @@ class Colony:
                 spore_counter += crowd_size
                 continue
 
-
+            # more than one spre on tile, triggering event
             if crowd_size > 1:
                 encounter = True 
 
@@ -118,27 +126,30 @@ class Colony:
                 event_results = event_handler(self.spores[chosen_ids[0]], self.spores[chosen_ids[1]])
                 survival_dict = {chosen_ids[0]: event_results[0][0],
                                 chosen_ids[1]: event_results[0][1]}
-                
+                # add event record so that it can be processed later
+                # cannot be processed now since it changes dict size
                 events[coor] = (survival_dict, event_results[1])
 
+            # process each spore on this tile
             for spore_id in spores_in_tile:
                 if encounter:
                     try:
                         survived = survival_dict[spore_id]
-                    except KeyError:
+                    except KeyError: # if they are not in survival event, then safe
                         survived = True
                     
-                    if not survived:
+                    if not survived: # delete this spore
                         del self.spores[spore_id]
                         print("a spore dead")
                         self.current_pop -= 1
                         spore_counter += 1
                         continue
-
+                
+                # safe spores proceeds to this step, so they will mobilize 
                 next_direction = next_directions[spore_counter]
                 new_coor = get_next_coor(next_direction, coor, self.width, self.height)
 
-
+                # change tiles according to their movements
                 try:
                     new_step[new_coor].append(spore_id)
                 except KeyError:
