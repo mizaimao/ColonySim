@@ -1,7 +1,7 @@
 import numpy as np
 from characters.spore import Spore
 from step_progression import *
-from configuration import cfg
+from configuration import spore_cfg
 
 sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}
 
@@ -107,7 +107,7 @@ class Colony:
             crowd_size = len(spores_in_tile)
 
             # too crowded, triggering extinct on tile
-            if crowd_size > cfg.crowd_threshold: 
+            if crowd_size > spore_cfg.crowd_threshold: 
                 print("a crowd of spores dead caused by famine,", crowd_size)
                 for spore_id in spores_in_tile:
                     del self.spores[spore_id]

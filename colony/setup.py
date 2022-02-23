@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-setup(name='ColonySim',
+setup(name='colony',
       version='0.1',
       description='Colony simulator.',
       author='Mizaimao',

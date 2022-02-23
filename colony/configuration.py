@@ -1,8 +1,15 @@
+"""Holding multiple types of settings for importing.
+"""
 import json
 from dataclasses import dataclass
+from typing import Any
+from generators.map_generator import GreenMapGenerator
+
+map_generator_mapper: dict[str, Any] = {"green": GreenMapGenerator}
+
 
 @dataclass
-class Config:
+class SporeSettings:
     def __init__(self, config: dict):
         """
         Configuration class
@@ -25,4 +32,44 @@ class Config:
         self.crowd_threshold = config["crowd_threshold"] 
 
 # objected shared in multiple places
-cfg = Config(json.load(open('config.json', 'r')))
+spore_cfg = SporeSettings(json.load(open('configs/spore_beheavoir/default.json', 'r')))
+
+
+@dataclass
+class WorldSetup:
+    """Some general settings for world.
+    """
+    def __init__(self, config: dict):
+        self.setting_id: str = config["setting_id"]
+        self.width: int = config["width"]
+        self.height: int = config["height"]
+        self.initial_population: int = config["initial_population"]
+
+world_cfg = WorldSetup(json.load(open('configs/world/default.json', 'r')))
+
+
+@dataclass
+class MapSetup:
+    """Map settings and pointers to generators and bitmaps.
+    """
+    def __init__(self,
+                 config: dict,
+                 world_cfg: WorldSetup,
+                 seed: int = 19930720, ):
+        """
+        Args
+            seed: seed for each types of generator.
+            world_cfg: pointer to world configs to access info like map size.
+        """
+        assert isinstance(seed, int)
+        self.seed = seed
+
+        self.map_description: str = config["map_description"]
+        self.map_type: str = config["map_type"]
+
+        map_generator_class = map_generator_mapper[self.map_type]
+        map_generator = map_generator_class(self.seed, width=world_cfg.width, height=world_cfg.height)
+        self.bitmap = map_generator.get_bitmap()
+    
+map_cfg = MapSetup(json.load(open('configs/map_generator/default.json', 'r')),
+                   world_cfg)

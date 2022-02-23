@@ -1,7 +1,7 @@
 import numpy as np
 from characters.spore import Spore
 
-from configuration import cfg
+from configuration import spore_cfg
 
 
 def spore_step(direction: int, current_coor: tuple):
@@ -79,7 +79,7 @@ def event_handler(a: Spore, b: Spore):
         return [True, True], 0
 
     elif event_code == 1: # fight
-        fatality = cfg.duel_fatality
+        fatality = spore_cfg.duel_fatality
         probs = np.random.random(2)
         a_survives = True
         b_survices = True 
@@ -92,7 +92,7 @@ def event_handler(a: Spore, b: Spore):
     elif event_code == 2: # proliforate 
         probs = np.random.random()
         new_born = 0
-        if probs <= cfg.one_night_chance:
+        if probs <= spore_cfg.one_night_chance:
             new_born += 1
         return [True, True], new_born
 
