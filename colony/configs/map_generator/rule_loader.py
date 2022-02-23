@@ -16,6 +16,7 @@ class GreenMapRules:
         # water bodies
         self.water_types: Dict[str, float] = cfg["water_types"]
         self.water_percentage: float = cfg["water_percentage"]
+        self.water_upper_limit: float = cfg["water_upper_limit"]
 
         # vegies
         self.wood_percentage: float = cfg["wood_percentage"]

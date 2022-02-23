@@ -12,6 +12,7 @@ GreenMapRules:
     lake: 0.2
     multiple: 0.2
   water_percentage: 0.1
+  water_upper_limit: 0.5  # at most how much water can be in a map
 
   # vegies
   wood_percentage: 0.1
