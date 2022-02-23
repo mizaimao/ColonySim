@@ -168,4 +168,3 @@ class Colony:
                 print("a new baby was born, pop:", self.current_pop)
 
         self.step = new_step
-
