@@ -1,5 +1,5 @@
 import numpy as np
-from spore import Spore
+from characters.spore import Spore
 from step_progression import *
 from configuration import cfg
 
