@@ -1,5 +1,5 @@
 import numpy as np
-from spore import Spore
+from characters.spore import Spore
 from step_progression import *
 from configuration import cfg
 
@@ -168,4 +168,3 @@ class Colony:
                 print("a new baby was born, pop:", self.current_pop)
 
         self.step = new_step
-

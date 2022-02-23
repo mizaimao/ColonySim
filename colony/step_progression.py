@@ -1,7 +1,8 @@
 import numpy as np
-from spore import Spore
+from characters.spore import Spore
 
 from configuration import cfg
+
 
 def spore_step(direction: int, current_coor: tuple):
     """
@@ -105,6 +106,7 @@ def get_direction(size: int = 1):
     """
     return np.random.randint(low=0, high=9, size=size)
 
+
 def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: int):
     """
     Generate the coor of the next step. Only returns valid coor
@@ -115,4 +117,3 @@ def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: 
             break
         next_direction = get_direction(size=1)
     return new_coor
-
