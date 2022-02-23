@@ -1,8 +1,10 @@
+"""Holding multiple types of settings for importing.
+"""
 import json
 from dataclasses import dataclass
 
 @dataclass
-class Config:
+class SporeSettings:
     def __init__(self, config: dict):
         """
         Configuration class
@@ -25,4 +27,16 @@ class Config:
         self.crowd_threshold = config["crowd_threshold"] 
 
 # objected shared in multiple places
-cfg = Config(json.load(open('config.json', 'r')))
+spore_cfg = SporeSettings(json.load(open('configs/spore_beheavoir/default.json', 'r')))
+
+
+@dataclass
+class WorldSetup:
+    """Some general settings for world.
+    """
+    setting_id: str = "FAILSAFE SETTINGS"
+    width: int = 32
+    height: int = 20
+    initial_population: int = 10
+
+world_cfg =  WorldSetup(json.load(open('configs/world/default.json', 'r')))

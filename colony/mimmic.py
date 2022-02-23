@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from dataclasses import dataclass
+import json
 import cv2
 import sys
 import os
@@ -7,14 +9,19 @@ import numpy as np
 
 from colony import Colony
 from step_visulizer import *
+from configuration import world_cfg
 
-WINDOW_NAME = "Colony Sim"
-X = 32
-Y = 20
-INIT_POP = 10
+
 target_folder = "/home/frank/Projects/ColonySim/frames"
 target_frame = 24 * 80
 auto_fps = 10
+
+
+WINDOW_NAME = str(world_cfg.setting_id)
+X = world_cfg.width
+Y = world_cfg.height
+INIT_POP = world_cfg.initial_population
+
 
 if __name__ == '__main__':
     try:
