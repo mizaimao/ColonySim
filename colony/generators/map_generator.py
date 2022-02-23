@@ -1,24 +1,13 @@
 """All types of map generators are defined here.
 """
 import abc
-from colony.configuration import WorldSetup
 import numpy as np
 
 
-class MapGenerator(abc):
-    """Abstract class for map generator.
-    """
-    @abc.abstractclassmethod
-    def get_bitmap(self):
-        """Return the bitmap of generated map.
-        """
-        pass
-
-
-class GreenMapGenerator(MapGenerator):
+class GreenMapGenerator():
     """Generator for grass-based map.
     """
-    def __init__(self, seed: int = None, world_cfg: WorldSetup = WorldSetup()):
+    def __init__(self, seed: int = None, width: int = None, height: int = None):
         """
         Args
             seed: seed for this generator.
@@ -26,7 +15,8 @@ class GreenMapGenerator(MapGenerator):
 
         """
         self.rng = np.random.RandomState(seed)
-        self.map = np.full(shape=(world_cfg.width, world_cfg.height), fill_value=101)
+        print(width, height)
+        self.map = np.full(shape=(width, height), fill_value=101)
 
 
         return

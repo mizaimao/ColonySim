@@ -1,7 +1,12 @@
+from typing import Tuple
+import cv2
 import numpy as np
+
+from configs.map_generator.ref import map_ref
 from colony import Colony
 from population_plotter import PopulationCurve
-import cv2
+from configuration import MapSetup, map_cfg
+
 
 # color in BGR 
 color_dict = {1: (245, 158, 66), 3: (95, 95, 250)}
@@ -11,7 +16,10 @@ class StepVisulizer:
     """
     Visualize a single step in colony
     """
-    def __init__(self, colony: Colony, multiplier: float = 30.0, pop_curve: PopulationCurve = None):
+    def __init__(self, colony: Colony,
+                 map_cfg: MapSetup = map_cfg,
+                 multiplier: float = 30.0,
+                 pop_curve: PopulationCurve = None):
         """
         Args:
             colony {Colony} -- pointer to a colony object saved in memory
@@ -35,6 +43,28 @@ class StepVisulizer:
         self.pop_curve = PopulationCurve()
         self.pop_curve.setup(width=self.right_info_pane_width, height=self.info_pane_height)
 
+        self.bitmap = map_cfg.bitmap
+        # init frame with a white background
+        self.static_frame = np.full((self.frame_height, self.frame_width, 3), 255, dtype=np.uint8)
+        self._paint_background()
+
+    def _paint_background(self):
+        for y in range(len(self.bitmap)):
+            for x in range(len(self.bitmap[0])):
+                color = map_ref[self.bitmap[y][x]][-1]
+                self._paint_large_pixel(self.static_frame, y, x, color)
+
+    def _paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
+        """Print a big pixel element on the given frame
+        """
+        x_start = int(x * self.multiplier)
+        x_end = int((x+1) * self.multiplier)
+        y_start = int(y * self.multiplier)
+        y_end = int((y+1) * self.multiplier)
+
+        frame[y_start:y_end, x_start:x_end] = color
+
+
     def plot_step(self, cycle: int = -1):
         """
         Plot a step. Info is accessed by the pointer to colony object. 
@@ -47,17 +77,14 @@ class StepVisulizer:
         Args:
             cycle {int} -- cycle number that will be displayed on info pane
         """
-        frame = np.full((self.frame_height, self.frame_width, 3), 255, dtype=np.uint8)
-        # upper pane
+        frame = self.static_frame.copy()
+        # upper pane, paint all spores
         for (x, y), spores in self.colony.step.items():
-            x_start = int(x * self.multiplier)
-            x_end = int((x+1) * self.multiplier)
-            y_start = int(y * self.multiplier)
-            y_end = int((y+1) * self.multiplier)
             # show only the first spore 
             top_spore = self.colony.spores[spores[0]]
             # dye this block
-            frame[y_start:y_end, x_start:x_end] = color_dict[top_spore.sex]
+            splore_color = color_dict[top_spore.sex]
+            self._paint_large_pixel(frame, x, y, splore_color)
        
         # lower panes
         # left info pane
