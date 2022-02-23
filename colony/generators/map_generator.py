@@ -2,6 +2,7 @@
 """
 import abc
 import numpy as np
+from configs.map_generator.rule_loader import GreenMapRules, load_rules
 
 
 class GreenMapGenerator():
@@ -15,11 +16,12 @@ class GreenMapGenerator():
 
         """
         self.rng = np.random.RandomState(seed)
-        print(width, height)
+
+        # map place holder
         self.map = np.full(shape=(width, height), fill_value=101)
+        # load map rules
+        self.rules = load_rules("green")
 
-
-        return
 
     def get_bitmap(self):
         """Return the bitmap of generated map.
