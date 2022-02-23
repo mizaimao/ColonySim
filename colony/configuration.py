@@ -2,6 +2,11 @@
 """
 import json
 from dataclasses import dataclass
+from typing import Any
+from generators.map_generator import GreenMapGenerator
+
+map_generator_mapper: dict[str, Any] = {"green": GreenMapGenerator}
+
 
 @dataclass
 class SporeSettings:
@@ -40,3 +45,24 @@ class WorldSetup:
     initial_population: int = 10
 
 world_cfg =  WorldSetup(json.load(open('configs/world/default.json', 'r')))
+
+
+@dataclass
+class MapSetup:
+    """Map settings and pointers to generators and bitmaps.
+    """
+    map_description: str = "Failsafe map settings"
+    map_type: str = "green"
+    
+    def __init__(self, seed: int = 19930720, world_cfg: WorldSetup = WorldSetup()):
+        """
+        Args
+            seed: seed for each types of generator.
+            world_cfg: pointer to world configs to access info like map size.
+        """
+        assert isinstance(seed, int)
+        self.seed = seed
+
+        map_generator_class = map_generator_mapper[self.map_type]
+        map_generator = map_generator_class(self.seed)
+        self.bitmap = map_generator.get_bitmap()
