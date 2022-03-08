@@ -14,7 +14,9 @@ from configuration import world_cfg
 
 target_folder = "/home/frank/Projects/ColonySim/frames"
 target_frame = 24 * 80
-auto_fps = 10
+
+# auto progression frames per second
+auto_fps = 5
 
 
 WINDOW_NAME = str(world_cfg.setting_id)
@@ -43,6 +45,7 @@ if __name__ == '__main__':
     cycle_counter = -1
     single_frame = visualizer.plot_step(cycle=cycle_counter) # returns an np.array
 
+    # manual progression by pressing a key
     if mode == "interactive":        
         k = ord('n')
         while k==ord('n'):
@@ -54,6 +57,7 @@ if __name__ == '__main__':
             k = cv2.waitKey(0)
         cv2.destroyAllWindows()
 
+    # generate each step as a frame and save these images
     elif mode == "dump":
         frame = 0
         while frame < target_frame:
@@ -67,6 +71,8 @@ if __name__ == '__main__':
             cv2.imwrite(out_name, single_frame)
 
         #os.system("ffmpeg -r 24 -i %05d.png -vcodec mpeg4 -y colony.mp4")
+
+    # auto progression
     elif mode == "autoplay":
         interval = int(1 / auto_fps * 1000)
         while True:
