@@ -1,9 +1,17 @@
+from dataclasses import dataclass, field
+from typing import Dict, Tuple, List
 import numpy as np
 from characters.spore import Spore
 from step_progression import *
 from configuration import spore_cfg
 
 sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}
+
+
+@dataclass
+class ColonyGeneralInfo:
+    gender_counts: Dict[int, int] = field(default_factory=dict)
+
 
 class Colony:
     """
@@ -31,6 +39,7 @@ class Colony:
         self.id_counter = 0
         self.current_pop = 0
         self.spores = {} # stores all shown spores
+        self.info = ColonyGeneralInfo()
 
         self.step_record = [] # a record of each step
 
@@ -39,8 +48,11 @@ class Colony:
             
             if i % 2 == 0:
                 sex = 1
-            else: 
+            else:
                 sex = 3
+            if not sex in self.info.gender_counts:
+                self.info.gender_counts[sex] = 0
+            self.info.gender_counts[sex] += 1
 
             self._create_individual(sex=sex, step_dict=self.step)
 
@@ -62,7 +74,7 @@ class Colony:
         else: 
             x, y = coor
 
-        # create a spore and add it 
+        # create a spore and add it to colony tracker dict
         s = Spore(sid=self.id_counter, sex=sex)
         # add spore pointer
         self.spores[s.sid] = s
@@ -77,6 +89,21 @@ class Colony:
         self.current_pop += 1
 
 
+    def _check_die_out(self):
+        """Checks if a colony reaches certerion that do not permit progression.
+        For example, a certain gender dies out.
+
+        Returns
+            bool: true if passes the test and the colony survives.
+        """
+        # check distinguishing by gender
+        for gender_counter in self.info.gender_counts.values():
+            if gender_counter == 0:
+                return False
+
+        return True
+
+
     def progress_a_step(self):
         """
         Generate the next step.
@@ -86,11 +113,15 @@ class Colony:
             pop {int} -- population of current step
 
         Returns:
-            dict -- next step 
+            bool: if the colony dies
         """
         # save current step
         if self.enable_history:
             self.step_record.append(self.step.copy())
+
+        if not self._check_die_out():
+            print("Colony Failed")
+            return False
 
         # processed step placeholder
         new_step = {} 
@@ -139,6 +170,7 @@ class Colony:
                         survived = True
                     
                     if not survived: # delete this spore
+                        self.info.gender_counts[spore_id] -= 1  # substract its gender counter
                         del self.spores[spore_id]
                         print("a spore dead")
                         self.current_pop -= 1
@@ -168,3 +200,5 @@ class Colony:
                 print("a new baby was born, pop:", self.current_pop)
 
         self.step = new_step
+
+        return True

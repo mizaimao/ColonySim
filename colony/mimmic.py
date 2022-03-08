@@ -51,10 +51,12 @@ if __name__ == '__main__':
         while k==ord('n'):
             cycle_counter += 1
             
-            chicken_col.progress_a_step()
+            colony_survived: bool = chicken_col.progress_a_step()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
             cv2.imshow(WINDOW_NAME, single_frame) 
             k = cv2.waitKey(0)
+            if not colony_survived:
+                break
         cv2.destroyAllWindows()
 
     # generate each step as a frame and save these images
@@ -64,11 +66,15 @@ if __name__ == '__main__':
             cycle_counter += 1
             frame += 1
             
-            chicken_col.progress_a_step()
+            colony_survived = chicken_col.progress_a_step()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
 
             out_name = os.path.join(target_folder, '%05d.png' % frame)
             cv2.imwrite(out_name, single_frame)
+
+            if not colony_survived:
+                break
+
 
         #os.system("ffmpeg -r 24 -i %05d.png -vcodec mpeg4 -y colony.mp4")
 
@@ -78,12 +84,14 @@ if __name__ == '__main__':
         while True:
             cycle_counter += 1
             
-            chicken_col.progress_a_step()
+            colony_survived = chicken_col.progress_a_step()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
             cv2.imshow(WINDOW_NAME, single_frame) 
-            key = cv2.waitKey(interval)
+            key = cv2.waitKey(interval)  # this one controlls time interval
             if key > 0:
                 cv2.destroyAllWindows()
+                break
+            if not colony_survived:
                 break
     else:
         raise NotImplementedError()
