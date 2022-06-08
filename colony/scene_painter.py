@@ -1,7 +1,7 @@
 """Painter functions to draw 2D or isometric views of upper panel.
 """
 from abc import ABC, abstractmethod
-from typing import Callable, Tuple
+from typing import Callable, List, Tuple, Union
 import cv2
 import numpy as np
 from math import sqrt
@@ -16,6 +16,9 @@ ISO_TILE_GRID_LINE_THICKNESS: float = 4
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
 ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
+ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -60
+ISO_TILE_UPPER_right_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -30
+DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
 
 STAGE_BACKGROUND = 150  # color for stage level background
 
@@ -160,6 +163,10 @@ class ColonyViewIso(ColonyView):
         self.width_offset = 0 + self.left_blank
         self.height_offset = self.tile_height * self.height / 2 + self.top_blank
 
+        # figure out tile depth above and below surface
+        # simple case now, just cut them into halves
+        self.tile_upper_depth = self.tile_height / 2
+        self.tile_lower_depth = self.tile_height / 2
 
     def _get_iso_coor(self, x: float, y: float):
         """Convert bitmap coordinates to isometric coordinates.
@@ -208,18 +215,74 @@ class ColonyViewIso(ColonyView):
         for y in range(len(self.bitmap)):
             for x in range(len(self.bitmap[0]) - 1, 0 - 1, -1):
                 color = map_ref[self.bitmap[y][x]][-1]
-                self.paint_large_pixel(self.static_frame, y, x, color)
+                self.paint_large_pixel(self.static_frame, y, x, color, background=True)
         return
 
-    def paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
-
+    def paint_large_pixel_plane(self, frame: np.ndarray, x: int, y: int, color: Tuple):
+        """Draw mega pixel without depth info, just overlay them on a plane
+        """
         # the function adds blanks automatically
         # four corners of each tile
         ul: Tuple(int, int) = self._get_iso_coor(x, y) 
         ur: Tuple(int, int) = self._get_iso_coor(x + 1, y)
         ll: Tuple(int, int) = self._get_iso_coor(x, y + 1) 
         lr: Tuple(int, int) = self._get_iso_coor(x + 1, y + 1)
-
-
         contours = np.array([ul, ll, lr, ur])
         cv2.fillPoly(frame, pts=[contours], color=color)
+
+    @staticmethod
+    def _shift_color(color: Tuple[int, ...], shift: Union[int, Tuple[int, ...]]):
+        if isinstance(shift, Tuple):
+            assert len(shift) == len(color), "color and shift should have the same amout of channels."
+            _new_color_0: List[int] = [sum(c + s) for c, s in zip(color, shift)]
+        else:
+            _new_color_0 = [c + shift for c in color]
+        _new_color_2: List[int] = []
+        for c in _new_color_0:
+            if c > 255:
+                _new_color_2.append(255)
+            elif c < 0:
+                _new_color_2.append(0)
+            else:
+                _new_color_2.append(c)
+
+        return tuple(_new_color_2)
+
+    def paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple, background: bool = False):
+        """Draw mega pixles with depth inofmration. There will be five regions for each tile now.
+        1. The surface of tile, which needs an Y offset to elevate from ground; we will use self.tile_upper_depth
+        2. Elevated left side of a tile;
+        3. Elevated right side of a tile;
+        4. Underground left side of a tile; (only displays when x==0)
+        5. Underground right side of a tile;  (only displays when y==Y)
+
+        Background tiles are painted a bit differently:
+        1. Depth are a bit shallower
+        2. Only show depth when x==0 and y==Y
+        """
+        upper_depth_shifter: int = int(self.tile_upper_depth)
+        if background:  # background has shallower depth (half of a tile)
+            upper_depth_shifter = int(upper_depth_shifter / 2)
+
+        # four original corners of each tile
+        ul: Tuple(int, int) = self._get_iso_coor(x, y) 
+        ur: Tuple(int, int) = self._get_iso_coor(x + 1, y)
+        ll: Tuple(int, int) = self._get_iso_coor(x, y + 1) 
+        lr: Tuple(int, int) = self._get_iso_coor(x + 1, y + 1)
+
+        shifter: Tuple[int, int] = (0, upper_depth_shifter)
+        
+        # surface of a tile ??? why a positive number causing it shift below ???
+        contours: np.ndarray = np.array([ul, ll, lr, ur]) - shifter
+        cv2.fillPoly(frame, pts=[contours], color=color)
+
+        # elevated left side
+        if (not background) or (x == 0):
+            contours = np.array([ul, ll, ll, ul]) - [shifter, shifter, (0, 0), (0, 0)]
+            cv2.fillPoly(frame, pts=[contours], color=self._shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT))
+
+        # elevated right side
+        if (not background) or (y == self.height - 1):
+            contours = np.array([ll, lr, lr, ll]) - [shifter, shifter, (0, 0), (0, 0)]
+            cv2.fillPoly(frame, pts=[contours], color=self._shift_color(color, ISO_TILE_UPPER_right_COLOR_SHIFT))
+        
