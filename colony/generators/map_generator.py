@@ -71,7 +71,8 @@ class GreenMapGenerator():
 
         # add those rolled water bodies one by one
         for water in waters_to_add:
-           add_single_waterbody(water, int(water_size * self.map.size), self.map, self.rng)  # water size in mega pixel
+            print(f'water {water} rolled')
+            add_single_waterbody(water, int(water_size * self.map.size), self.map, self.rng)  # water size in mega pixel
 
     def _add_vegies(self):
         return
