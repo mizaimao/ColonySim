@@ -2,11 +2,12 @@
 """
 from typing import Tuple
 
+# NOTE: color codes are in RGB
 map_ref: dict[int, Tuple] = {
     # 0-100 reserved for moviable objects
 
     # 101-200: vege
-    101: ("grass", (52, 140, 49)),
+    101: ("grass", (57, 191, 141)),
     111: ("tree", (66, 105, 47)),
 
     # 201-300: water

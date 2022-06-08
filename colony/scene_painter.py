@@ -20,12 +20,13 @@ ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
 ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -60
 ISO_TILE_UPPER_right_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -30
 ISO_TILE_OUTLINE_THICKNESS: int = 1
-ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
+#ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
+ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210, ) * 3
 
-DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
+DIRT_COLOR: Tuple[float, ...] = (196, 181, 18)  # BGR for sake of opencv
 
 # no alpha channel
-STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (191, 134, 24)# color for stage level background
+STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (202, 193, 103)# color for stage level background
 
 
 class ColonyView(ABC):
@@ -196,12 +197,10 @@ class ColonyViewIso(ColonyView):
         )
         return (new_x, new_y)
 
-    def _paint_isometric_static_frame(self):
-        # create a blank background
-        frame = np.full(
-            (self.frame_height, self.frame_width, 3), STAGE_BACKGROUND, dtype=np.uint8
-        )
-
+    def _paint_grid_lines(self, frame: np.ndarray):
+        """Not used. 
+        Draw grid lines for debugging purposes.
+        """
         # add x grid lines to frame
         # from (0, Y0) to (x, Y0) until (0, Yy) to (x, Yy)
         for y in range(self.height + 1):
@@ -227,6 +226,11 @@ class ColonyViewIso(ColonyView):
                 thickness=ISO_TILE_GRID_LINE_THICKNESS,
             )
 
+    def _paint_isometric_static_frame(self):
+        # create a blank background
+        frame = np.full(
+            (self.frame_height, self.frame_width, 3), STAGE_BACKGROUND, dtype=np.uint8
+        )
         return frame
 
     def get_static_frame(self):
