@@ -5,6 +5,12 @@ def add_single_waterbody(water_type: str,
                          map: np.ndarray,
                          rng: np.random.RandomState):
     """Add a single type of waterbody to the map, by calling corresponding water functions.
+
+    Args
+        water_type: type of water body to add.
+        water_size: size of water body, in mega pixel.
+        map: a pointer to map array.
+        rng: RandomState instance that is used as RNG.
     """
     if water_type == "no water":
         return

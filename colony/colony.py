@@ -84,6 +84,7 @@ class Colony:
             step_dict[(x, y)].append(s.sid)
         except KeyError:
             step_dict[(x, y)] = [s.sid]
+        self.info.gender_counts[sex] += 1
 
         self.id_counter += 1
         self.current_pop += 1
@@ -170,7 +171,8 @@ class Colony:
                         survived = True
                     
                     if not survived: # delete this spore
-                        self.info.gender_counts[spore_id] -= 1  # substract its gender counter
+                        spore_pointer = self.spores[spore_id]
+                        self.info.gender_counts[spore_pointer.sex] -= 1  # substract its gender counter
                         del self.spores[spore_id]
                         print("a spore dead")
                         self.current_pop -= 1
