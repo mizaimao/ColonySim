@@ -17,8 +17,6 @@ GreenMapRules:
   water_rules:
     river_rules:
       side_offset: 0.2  # water won't spawn this close to edge (in ratio), applies both influx and efflux edges
-      river_width:
-
 
   # vegies
   wood_percentage: 0.1

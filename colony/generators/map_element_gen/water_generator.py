@@ -28,6 +28,9 @@ def add_river(water_size: int, map: np.ndarray, rng: np.random.RandomState):
     """Add a river to the map. A river starts at one of four sides of the map, travese to another side
     """
     width, height = map.shape
+    start_side, end_side = rng.choice(["left", "top", "right", "bottom"], size=2, replace=False)
+    
+    
     # TODO
     return
 
