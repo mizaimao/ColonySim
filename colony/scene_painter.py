@@ -7,9 +7,12 @@ import numpy as np
 from math import sqrt
 from configs.map_generator.ref import map_ref
 
-ISO_UPPER: float = 0.1  # ratio to frame height
-ISO_TILE_HEIGHT: float = 0.1  # raito to mega pixel size
+# artifacial upper and lower blanks
+ISO_UPPER: float = 0.05 # ratio to frame height
+ISO_LOWER: float = 0.05
 
+ISO_TILE_HEIGHT: float = 1.0  # raito to mega pixel size
+ISO_TILE_GRID_LINE_THICKNESS: float = 4
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
 ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
@@ -111,53 +114,65 @@ class ColonyViewIso(ColonyView):
         # if colony shape is different from viewer shape, some spaces must be padded.
         self.left_blank: int = 0  # blank space on leftside
         self.top_blank: int = 0  # blank space on top
-        self.tile_height: float = 0  # fake-3D gets a Z metric
+        self.tile_height: float = 0  # fake-3D gets a Z metric, half height goes above a tile and the other half goes blow
 
         # figure out multiplier when projecting into isometric spaces
         self._figure_out_multiplier()
 
     def _figure_out_multiplier(self):
+        """Here more than a simple multiplier was calculated.
+        """
         # this "traditional" multiplier set is used to scale UI stuffs
         multiplier_x: float = self.frame_width / self.width
         multiplier_y: float = self.frame_height / self.height
         self.multiplier = min(multiplier_x, multiplier_y)
 
         # this isotromic multiplier set is used to draw tiles
+        # calculate artificial Y blanks
+        deduced_y_space: float = self.frame_height * (ISO_UPPER + ISO_LOWER)
         multiplier_x_iso: float = self.frame_width / (self.width * ISO_TILE_WIDTH_SCALAR)
-        multiplier_y_iso: float = self.frame_height / (self.height * ISO_TILE_HEIGHT_SCALAR)
+        multiplier_y_iso: float = (self.frame_height - deduced_y_space) / (self.height * ISO_TILE_HEIGHT_SCALAR)
         self.multiplier_iso = min(multiplier_x_iso, multiplier_y_iso)
     
         self.tile_width: float = self.multiplier_iso * ISO_TILE_WIDTH_SCALAR
         self.tile_height: float = self.multiplier_iso * ISO_TILE_HEIGHT_SCALAR
 
+        # figure out blank paddings
+        self.left_blank = int((self.frame_width - self.tile_width * self.width) / 2)
+        self.top_blank = int((self.frame_height - self.tile_height * self.height) / 2)
+
         # height offset is needed to "shift" pixles to right by half of playground width
         # different maths requires x-shifting, but it's not the case here
-        self.width_offset: float = 0
-        self.height_offset: float = self.tile_height * self.height / 2
+        self.width_offset: float = 0 + self.left_blank
+        self.height_offset: float = self.tile_height * self.height / 2 + self.top_blank
+
 
     def _get_iso_coor(self, x: float, y: float):
-        """Convert bitmap coordinates to isometric coordinates."""
-        return (
-            int((x * self.tile_width / 2) + (y * self.tile_width / 2) + self.width_offset),
-            int((y * self.tile_height / 2) - (x * self.tile_height / 2) + self.height_offset)
-        )
+        """Convert bitmap coordinates to isometric coordinates.
+        OpenCV draw lines by using integer indices (of course).
+        """
+        # this isometric mapping requires y-shifting
+        new_x: int = int((x * self.tile_width / 2) + (y * self.tile_width / 2) + self.width_offset)
+        new_y: int = int((y * self.tile_height / 2) - (x * self.tile_height / 2) + self.height_offset)
+        return (new_x, new_y)
 
 
     def _paint_isometric_static_frame(self):
+        # create a blank background
         frame = np.full((self.frame_height, self.frame_width, 3), STAGE_BACKGROUND, dtype=np.uint8)
 
-        # add x lines to frame
+        # add x grid lines to frame
         # from (0, Y0) to (x, Y0) until (0, Yy) to (x, Yy)
         for y in range(self.height + 1):
             start_point = self._get_iso_coor(0, y)
             end_point = self._get_iso_coor(self.width, y)
-            cv2.line(frame, start_point, end_point, color=ISO_TILE_LINE_COLOR, thickness=4)
-        # add y lines to frame
+            cv2.line(frame, start_point, end_point, color=ISO_TILE_LINE_COLOR, thickness=ISO_TILE_GRID_LINE_THICKNESS)
+        # add y grid lines to frame
         # from (X0, 0) to (X0, y) until (Xx, 0) to (Xx, y)
         for x in range(self.width + 1):
             start_point = self._get_iso_coor(x, 0)
             end_point = self._get_iso_coor(x, self.height)
-            cv2.line(frame, start_point, end_point, color=ISO_TILE_LINE_COLOR, thickness=4)
+            cv2.line(frame, start_point, end_point, color=ISO_TILE_LINE_COLOR, thickness=ISO_TILE_GRID_LINE_THICKNESS)
 
         return frame
 
