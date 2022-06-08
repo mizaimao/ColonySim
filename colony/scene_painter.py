@@ -120,24 +120,25 @@ class ColonyViewIso(ColonyView):
         self._figure_out_multiplier()
 
     def _figure_out_multiplier(self):
-        """Here more than a simple multiplier was calculated.
+        """Here more than a simple multiplier was calculated. This is becasue the invovement of isometric mapping.
         """
-        # this "traditional" multiplier set is used to scale UI stuffs
+        # this "traditional" multiplier set is used to scale UI stuffs, like it does in 2D version.
         multiplier_x: float = self.frame_width / self.width
         multiplier_y: float = self.frame_height / self.height
         self.multiplier = min(multiplier_x, multiplier_y)
 
         # this isotromic multiplier set is used to draw tiles
-        # calculate artificial Y blanks
+        # calculate artificial Y blanks, which are some reserved spaces at top and bottom (for fake hight in the future)
         deduced_y_space: float = self.frame_height * (ISO_UPPER + ISO_LOWER)
         multiplier_x_iso: float = self.frame_width / (self.width * ISO_TILE_WIDTH_SCALAR)
         multiplier_y_iso: float = (self.frame_height - deduced_y_space) / (self.height * ISO_TILE_HEIGHT_SCALAR)
         self.multiplier_iso = min(multiplier_x_iso, multiplier_y_iso)
     
+        # calculate size of each tile. Not their sides but more like diagonals of the dimond shapes.
         self.tile_width: float = self.multiplier_iso * ISO_TILE_WIDTH_SCALAR
         self.tile_height: float = self.multiplier_iso * ISO_TILE_HEIGHT_SCALAR
 
-        # figure out blank paddings
+        # figure out blank paddings at top and left
         self.left_blank = int((self.frame_width - self.tile_width * self.width) / 2)
         self.top_blank = int((self.frame_height - self.tile_height * self.height) / 2)
 
@@ -150,6 +151,8 @@ class ColonyViewIso(ColonyView):
     def _get_iso_coor(self, x: float, y: float):
         """Convert bitmap coordinates to isometric coordinates.
         OpenCV draw lines by using integer indices (of course).
+
+        This projecting scheme makes dot (0, 0) or the upper left corner mapped to the very left spot.
         """
         # this isometric mapping requires y-shifting
         new_x: int = int((x * self.tile_width / 2) + (y * self.tile_width / 2) + self.width_offset)
