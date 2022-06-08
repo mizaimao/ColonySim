@@ -19,8 +19,13 @@ class Colony:
     spawned and may encounter each other tirggering potential destruction 
     or multiplication.
     """
-    def __init__(self, width: int = 32, height: int = 16, 
-                init_pop: int = 10, seed: int = 0):
+    def __init__(self,
+                width: int = 32,
+                height: int = 16,
+                viewer_width: int = 1440,
+                viewer_height: int = 900,
+                init_pop: int = 10,
+                seed: int = 0):
         """
         Args:
             init_pop {int}: inital population. Now only two types which 
@@ -32,9 +37,10 @@ class Colony:
         """
         self.width = width
         self.height = height
+        self.viewer_width = viewer_width
+        self.viewer_height = viewer_height
         self.allow_init_overlapping = True
         self.enable_history = False
-        #self.map = np.zeros((width, height), dtype=np.uint8)
         self.step = {}
         self.id_counter = 0
         self.current_pop = 0

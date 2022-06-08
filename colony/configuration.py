@@ -44,6 +44,8 @@ class WorldSetup:
         self.width: int = config["width"]
         self.height: int = config["height"]
         self.initial_population: int = config["initial_population"]
+        self.viewer_width: int = config["viewer_width"]
+        self.viewer_height: int = config["viewer_height"]
 
 world_cfg = WorldSetup(json.load(open('configs/world/default.json', 'r')))
 

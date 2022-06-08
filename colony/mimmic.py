@@ -22,6 +22,8 @@ auto_fps = 5
 WINDOW_NAME = str(world_cfg.setting_id)
 X = world_cfg.width
 Y = world_cfg.height
+VX = world_cfg.viewer_width
+VY = world_cfg.viewer_height
 INIT_POP = world_cfg.initial_population
 
 
@@ -35,12 +37,18 @@ if __name__ == '__main__':
 
     mode = 'interactive'
     #mode = 'dump'
-    mode = 'autoplay'
+    #mode = 'autoplay'
 
     # create a colony
-    chicken_col = Colony(width=X, height=Y, init_pop=INIT_POP, seed=0)
+    chicken_col = Colony(
+        width=X,
+        height=Y,
+        viewer_width=VX,
+        viewer_height=VY,
+        init_pop=INIT_POP,
+        seed=0)
     # plotting object
-    visualizer = StepVisulizer(chicken_col, multiplier=45)
+    visualizer = StepVisulizer(colony=chicken_col)
     
     cycle_counter = -1
     single_frame = visualizer.plot_step(cycle=cycle_counter) # returns an np.array
