@@ -2,6 +2,7 @@
 """
 from abc import ABC, abstractmethod
 from typing import Callable, List, Tuple, Union
+from black import out
 import cv2
 import numpy as np
 from math import sqrt
@@ -12,14 +13,14 @@ ISO_UPPER: float = 0.05  # ratio to frame height
 ISO_LOWER: float = 0.05
 
 ISO_TILE_HEIGHT: float = 1.0  # raito to mega pixel size
-ISO_TILE_GRID_LINE_THICKNESS: float = 4.0
+ISO_TILE_GRID_LINE_THICKNESS: int = 4
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
 ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
 ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -60
 ISO_TILE_UPPER_right_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -30
-ISO_TILE_OUTLINE_THICKNESS: float = 1.0
-ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (200, 200, 200)
+ISO_TILE_OUTLINE_THICKNESS: int = 1
+ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
 
 DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
 
@@ -277,8 +278,21 @@ class ColonyViewIso(ColonyView):
 
         return tuple(_new_color_2)
 
+    @staticmethod
+    def _draw_tile_outlines(frame: np.ndarray, contours: np.ndarray):
+            cv2.line(frame, contours[0], contours[1], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+            cv2.line(frame, contours[1], contours[2], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+            cv2.line(frame, contours[2], contours[3], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+            cv2.line(frame, contours[3], contours[0], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+
     def paint_large_pixel(
-        self, frame: np.ndarray, x: int, y: int, color: Tuple, background: bool = False
+        self,
+        frame: np.ndarray,
+        x: int,
+        y: int,
+        color: Tuple,
+        background: bool = False,
+        outline: bool = True,
     ):
         """Draw mega pixles with depth inofmration. There will be five regions for each tile now.
         1. The surface of tile, which needs an Y offset to elevate from ground; we will use self.tile_upper_depth
@@ -290,10 +304,12 @@ class ColonyViewIso(ColonyView):
         Background tiles are painted a bit differently:
         1. Depth are a bit shallower
         2. Only show depth when x==0 and y==Y
+
+        Tile outline applies only to player/mimic/whatever-individual tiles, not backgrounds tiles.
+        Some lines are overlapping. So different sides will have different number of line drawing statements.
         """
         upper_depth_shifter: int = int(self.tile_upper_depth)
-        if background:  # background has shallower depth (half of a tile)
-            upper_depth_shifter = int(upper_depth_shifter / 2)
+        upper_depth_shifter_half = int(upper_depth_shifter / 2)
 
         # four original corners of each tile
         ul: Tuple(int, int) = self._get_iso_coor(x, y)
@@ -302,37 +318,50 @@ class ColonyViewIso(ColonyView):
         lr: Tuple(int, int) = self._get_iso_coor(x + 1, y + 1)
 
         shifter: Tuple[int, int] = (0, upper_depth_shifter)
+        half_shifter: Tuple[int, int] = (0, upper_depth_shifter_half)
+        if background:  # background has shallower depth (half of a tile)
+            shifter = (0, upper_depth_shifter_half)
+            half_shifter = (0, 0)
 
         # surface of a tile ??? why a positive number causing it shift below ???
         contours: np.ndarray = np.array([ul, ll, lr, ur]) - shifter
         cv2.fillPoly(frame, pts=[contours], color=color)
+        if outline:
+            self._draw_tile_outlines(frame, contours)
 
         # elevated left side
         if (not background) or (x == 0):
-            contours = np.array([ul, ll, ll, ul]) - [shifter, shifter, (0, 0), (0, 0)]
+            contours = np.array([ul, ll, ll, ul]) - [shifter, shifter, half_shifter, half_shifter]
             cv2.fillPoly(
                 frame,
                 pts=[contours],
                 color=self._shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
             )
+            if outline:
+                self._draw_tile_outlines(frame, contours)
 
         # elevated right side
         if (not background) or (y == self.height - 1):
-            contours = np.array([ll, lr, lr, ll]) - [shifter, shifter, (0, 0), (0, 0)]
+            contours = np.array([ll, lr, lr, ll]) - [shifter, shifter, half_shifter, half_shifter]
             cv2.fillPoly(
                 frame,
                 pts=[contours],
                 color=self._shift_color(color, ISO_TILE_UPPER_right_COLOR_SHIFT),
             )
+            if outline:
+                self._draw_tile_outlines(frame, contours)
 
         # underground left side
         if background and (x == 0):
-            contours = np.array([ul, ll, ll, ul]) + [shifter, shifter, (0, 0), (0, 0)]
+            contours = np.array([ul, ll, ll, ul]) + [shifter, shifter, half_shifter, half_shifter]
             cv2.fillPoly(
                 frame,
                 pts=[contours],
                 color=self._shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
             )
+            if outline:
+                self._draw_tile_outlines(frame, contours)
+
 
         # underground right side
         if background and (y == self.height - 1):
@@ -342,3 +371,5 @@ class ColonyViewIso(ColonyView):
                 pts=[contours],
                 color=self._shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
             )
+            if outline:
+                self._draw_tile_outlines(frame, contours)
