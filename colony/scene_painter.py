@@ -30,57 +30,65 @@ class ColonyView(ABC):
 
     @abstractmethod
     def get_static_frame(self):
+        """Paint the starge background, and then add empty playground.
+        Stage background is the back-most layer, and playground is the space where each dot moves around.
+        """
         pass
 
     @abstractmethod
-    def _paint_background(self):
-        """Add background to """
+    def _paint_playground(self):
+        """Paint playground."""
         pass
 
     @abstractmethod
     def _paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
-        """Add individual large "pixels" onto scene."""
+        """Add individual large "pixels" onto scene/playground."""
         pass
 
 class ColonyView2D(ColonyView):
     def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap):
         super().__init__(width, height, frame_width, frame_height, bitmap)
 
+        # if colony shape is different from viewer shape, some spaces must be padded.
         self.left_blank: int = 0  # blank space on leftside
         self.top_blank: int = 0  # blank space on top
+        
+        # because we now separated viwer shape and colony shape, there should be a value we use to map colony dots to
+        # viewer.
         self._figure_out_multiplier()
-        print(self.width, self.height, self.frame_width, self.frame_height,)
-
 
     def _figure_out_multiplier(self):
+        """To figure out a scalar that we can use to map individual dots to playground by giving them a size.
+        """
         multiplier_x: float = self.frame_width / self.width
         multiplier_y: float = self.frame_height / self.height
         self.multiplier = min(multiplier_x, multiplier_y)
 
+        # in 2D viewer, either X or Y is fully extended, so we only need only blak
         blank: int = int(abs(self.frame_width - self.frame_height) / 2)
-        print(abs(self.width - self.height))
-        if multiplier_x > multiplier_y:
-            self.left_blank = blank#int((self.width * self.multiplier) // 2)
-        else:
-            self.top_blank = blank#int((self.height * self.multiplier) // 2)
-        
-        print(self.left_blank, self.top_blank)
 
-        print('mult', self.multiplier)
+        if multiplier_x > multiplier_y:
+            self.left_blank = blank
+        else:
+            self.top_blank = blank
 
     def get_static_frame(self):
+        """Paint the background.
+        """
         if not self.static_frame:
             self.static_frame = np.full((self.frame_height, self.frame_width, 3), STAGE_BACKGROUND, dtype=np.uint8)
         return self.static_frame
 
-    def _paint_background(self):
+    def _paint_playground(self):
+        """Paint playground.
+        """
         for y in range(len(self.bitmap)):
             for x in range(len(self.bitmap[0])):
                 color = map_ref[self.bitmap[y][x]][-1]
                 self._paint_large_pixel(self.static_frame, y, x, color)
 
     def _paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
-        """Print a big pixel element on the given frame
+        """Paint a big pixel element on the given frame.
         """
         x_start = int(x * self.multiplier) + self.left_blank
         x_end = int((x+1) * self.multiplier) + self.left_blank

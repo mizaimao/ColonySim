@@ -47,7 +47,7 @@ class StepVisulizer:
             self.frame_height,
             self.bitmap)
         self.static_frame = self.painter.get_static_frame()  
-        self.painter._paint_background()
+        self.painter._paint_playground()
 
         self.multiplier = self.painter.multiplier
 
