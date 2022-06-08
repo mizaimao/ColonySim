@@ -4,6 +4,6 @@ Just a fun toy programm a bit like game of life but I haven't spent much time on
 
 Originally a pure 2D viewer was written; now added isometric viwer, too.  
 
-<img width="1552" alt="B761947E-9D06-4A4F-9D44-C045D0EA3DA7" src="https://user-images.githubusercontent.com/22352701/172713685-5cb0e83f-325d-4b50-8149-db4e954ac114.png">
+<img width="832" alt="8463CFCC-A8E9-48F0-BF25-EFF5D01654E9" src="https://user-images.githubusercontent.com/22352701/172729991-b0ac45b7-fb30-4782-90ad-1b814b8194c6.png">
 
-<img width="1508" alt="66B7B79C-AC4B-4655-AA10-C2CCFBF0202B" src="https://user-images.githubusercontent.com/22352701/172713705-796462bb-5826-4e75-b4a7-41cf0d8ed9d8.png">
+<img width="832" alt="474C8611-A077-42D8-A0FB-936427265C99" src="https://user-images.githubusercontent.com/22352701/172729999-45e9666f-373a-4cfb-a8b9-876bca5d5697.png">
