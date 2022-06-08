@@ -4,15 +4,14 @@ import json
 import cv2
 import sys
 import os
-import time
-import numpy as np
+import tqdm
 
 from colony import Colony
 from step_visulizer import *
 from configuration import world_cfg
 
 
-target_folder = "/home/frank/Projects/ColonySim/frames"
+target_folder = "/Users/frank/Projects/ColonySim/frames"
 target_frame = 24 * 80
 
 # auto progression frames per second
@@ -70,10 +69,8 @@ if __name__ == '__main__':
     # generate each step as a frame and save these images
     elif mode == "dump":
         frame = 0
-        while frame < target_frame:
-            cycle_counter += 1
-            frame += 1
-            
+        for frame in tqdm.tqdm(range(target_frame)):
+            cycle_counter += 1        
             colony_survived = chicken_col.progress_a_step()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
 
@@ -82,9 +79,9 @@ if __name__ == '__main__':
 
             if not colony_survived:
                 break
-
-
-        #os.system("ffmpeg -r 24 -i %05d.png -vcodec mpeg4 -y colony.mp4")
+        print("Frames generated, converting it to video...")
+        # ffmpeg -r 24 -i %05d.png -vcodec mpeg4 -y colony.mp4
+        #os.system(f"ffmpeg -r 24 -i {target_folder}/%05d.png -vcodec mpeg4 -y colony.mp4")
 
     # auto progression
     elif mode == "autoplay":

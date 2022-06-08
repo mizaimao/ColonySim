@@ -24,7 +24,8 @@ ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
 
 DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
 
-STAGE_BACKGROUND = 150  # color for stage level background
+# no alpha channel
+STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (191, 134, 24)# color for stage level background
 
 
 class ColonyView(ABC):
@@ -365,7 +366,7 @@ class ColonyViewIso(ColonyView):
 
         # underground right side
         if background and (y == self.height - 1):
-            contours = np.array([ll, lr, lr, ll]) + [shifter, shifter, (0, 0), (0, 0)]
+            contours = np.array([ll, lr, lr, ll]) + [shifter, shifter, half_shifter, half_shifter]
             cv2.fillPoly(
                 frame,
                 pts=[contours],

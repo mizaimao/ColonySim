@@ -3,3 +3,4 @@ numpy
 opencv-python
 pyyaml==5.4.1
 mypy
+tqdm
