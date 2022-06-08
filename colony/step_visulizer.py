@@ -38,7 +38,7 @@ class StepVisulizer:
         self.frame_width = colony.viewer_width
 
         painter_class = painters["isometric"]
-        # painter_class = painters["2D"]
+        #painter_class = painters["2D"]
 
         self.painter = painter_class(
             self.colony.width,
