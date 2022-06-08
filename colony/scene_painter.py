@@ -7,8 +7,13 @@ import numpy as np
 from math import sqrt
 from configs.map_generator.ref import map_ref
 
-ISO_UPPER = 0.1  # ratio to frame height
-ISO_TILE_HEIGHT = 0.1  # raito to mega pixel size
+ISO_UPPER: float = 0.1  # ratio to frame height
+ISO_TILE_HEIGHT: float = 0.1  # raito to mega pixel size
+
+ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
+ISO_TILE_HEIGHT_SCALAR: float = 1.0
+ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
+
 STAGE_BACKGROUND = 150  # color for stage level background
 
 class ColonyView(ABC):
@@ -100,55 +105,59 @@ class ColonyView2D(ColonyView):
 
 class ColonyViewIso(ColonyView):
     def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap):
-        assert frame_height == frame_width, f"Isometric view supports only square playground, got {(frame_width, frame_height)}"
+        assert width == height, f"Isometric view supports only square playground, got {(width, height)}"
         super().__init__(width, height, frame_width, frame_height, bitmap)
 
-        self.top_blank: int = 20
-        self.left_blank: int = 20
+        # if colony shape is different from viewer shape, some spaces must be padded.
+        self.left_blank: int = 0  # blank space on leftside
+        self.top_blank: int = 0  # blank space on top
+        self.tile_height: float = 0  # fake-3D gets a Z metric
 
-        # mega pixel counts
-        self.x_mega: int = frame_width 
-        self.y_mega: int = frame_height
-        #self.side: float = frame_height
+        # figure out multiplier when projecting into isometric spaces
+        self._figure_out_multiplier()
+
+    def _figure_out_multiplier(self):
+        # this "traditional" multiplier set is used to scale UI stuffs
+        multiplier_x: float = self.frame_width / self.width
+        multiplier_y: float = self.frame_height / self.height
+        self.multiplier = min(multiplier_x, multiplier_y)
+
+        # this isotromic multiplier set is used to draw tiles
+        multiplier_x_iso: float = self.frame_width / (self.width * ISO_TILE_WIDTH_SCALAR)
+        multiplier_y_iso: float = self.frame_height / (self.height * ISO_TILE_HEIGHT_SCALAR)
+        self.multiplier_iso = min(multiplier_x_iso, multiplier_y_iso)
+    
+        self.tile_width: float = self.multiplier_iso * ISO_TILE_WIDTH_SCALAR
+        self.tile_height: float = self.multiplier_iso * ISO_TILE_HEIGHT_SCALAR
+
+        # height offset is needed to "shift" pixles to right by half of playground width
+        # different maths requires x-shifting, but it's not the case here
+        self.width_offset: float = 0
+        self.height_offset: float = self.tile_height * self.height / 2
+
+    def _get_iso_coor(self, x: float, y: float):
+        """Convert bitmap coordinates to isometric coordinates."""
+        return (
+            int((x * self.tile_width / 2) + (y * self.tile_width / 2) + self.width_offset),
+            int((y * self.tile_height / 2) - (x * self.tile_height / 2) + self.height_offset)
+        )
+
 
     def _paint_isometric_static_frame(self):
         frame = np.full((self.frame_height, self.frame_width, 3), STAGE_BACKGROUND, dtype=np.uint8)
-        tile_half = self.multiplier / 2
 
         # add x lines to frame
-        for x in range(self.x_mega + 1):
-            start_point = (
-                int(
-                    (x - self.y_mega) * tile_half
-                ),
-                int(
-                    (x + 0) * tile_half
-                )
-                
-            )
-            end_point = (
-                int(
-                    (self.x_mega - self.y_mega) * tile_half
-                ),
-                int(
-                    (x + 0) * tile_half
-                )
-                
-            )
-            print(start_point, end_point)
-            cv2.line(frame, start_point, end_point, color=(225, 225, 225), thickness=4)
-
+        # from (0, Y0) to (x, Y0) until (0, Yy) to (x, Yy)
+        for y in range(self.height + 1):
+            start_point = self._get_iso_coor(0, y)
+            end_point = self._get_iso_coor(self.width, y)
+            cv2.line(frame, start_point, end_point, color=ISO_TILE_LINE_COLOR, thickness=4)
         # add y lines to frame
-        for y in range(self.y_mega + 1):
-            start_point = (
-                (x - self.y_mega) * tile_half,
-                (x + 0) * tile_half,
-            )
-            end_point = (
-                (self.x_mega - self.y_mega) * tile_half,
-                (x + 0) * tile_half,
-            )
-            cv2.line(frame, start_point, end_point, color=(225, 225, 225), thickness=4)
+        # from (X0, 0) to (X0, y) until (Xx, 0) to (Xx, y)
+        for x in range(self.width + 1):
+            start_point = self._get_iso_coor(x, 0)
+            end_point = self._get_iso_coor(x, self.height)
+            cv2.line(frame, start_point, end_point, color=ISO_TILE_LINE_COLOR, thickness=4)
 
         return frame
 
@@ -158,7 +167,7 @@ class ColonyViewIso(ColonyView):
             self.static_frame = self._paint_isometric_static_frame()
         return self.static_frame
 
-    def _paint_background(self):
+    def _paint_playground(self):
         return
 
     def _paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
