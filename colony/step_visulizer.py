@@ -83,8 +83,13 @@ class StepVisulizer:
             cycle {int} -- cycle number that will be displayed on info pane
         """
         frame = self.static_frame.copy()
+        # need to sort spores to paint them in a correct order, this is needed for isometrci viewing
+        _tempList = sorted(self.colony.step.keys(), key=lambda x:x[0], reverse=True)
+        step_sorted = sorted(_tempList, key=lambda x: x[1])
+
         # upper pane, paint all spores
-        for (x, y), spores in self.colony.step.items():
+        for (x, y) in step_sorted:
+            spores = self.colony.step[(x, y)]
             # show only the first spore 
             top_spore = self.colony.spores[spores[0]]
             # dye this block

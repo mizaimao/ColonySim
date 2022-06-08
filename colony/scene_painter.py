@@ -286,3 +286,13 @@ class ColonyViewIso(ColonyView):
             contours = np.array([ll, lr, lr, ll]) - [shifter, shifter, (0, 0), (0, 0)]
             cv2.fillPoly(frame, pts=[contours], color=self._shift_color(color, ISO_TILE_UPPER_right_COLOR_SHIFT))
         
+        # underground left side
+        if background and (x == 0):
+            contours = np.array([ul, ll, ll, ul]) + [shifter, shifter, (0, 0), (0, 0)]
+            cv2.fillPoly(frame, pts=[contours], color=self._shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT))
+
+        # underground right side
+        if background and (y == self.height - 1):
+            contours = np.array([ll, lr, lr, ll]) + [shifter, shifter, (0, 0), (0, 0)]
+            cv2.fillPoly(frame, pts=[contours], color=self._shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT))
+        
