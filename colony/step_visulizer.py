@@ -47,7 +47,7 @@ class StepVisulizer:
             self.frame_height,
             self.bitmap)
         self.static_frame = self.painter.get_static_frame()  
-        self.painter._paint_playground()
+        self.painter.paint_playground()
 
         self.multiplier = self.painter.multiplier
 
@@ -89,7 +89,7 @@ class StepVisulizer:
             top_spore = self.colony.spores[spores[0]]
             # dye this block
             splore_color = color_dict[top_spore.sex]
-            self.painter._paint_large_pixel(frame, x, y, splore_color)
+            self.painter.paint_large_pixel(frame, x, y, splore_color)
        
         # lower panes
         # left info pane

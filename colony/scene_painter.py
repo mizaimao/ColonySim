@@ -38,18 +38,18 @@ class ColonyView(ABC):
 
     @abstractmethod
     def get_static_frame(self):
-        """Paint the starge background, and then add empty playground.
+        """Paint the starge background, and calclulate variables needed for playground.
         Stage background is the back-most layer, and playground is the space where each dot moves around.
         """
         pass
 
     @abstractmethod
-    def _paint_playground(self):
+    def paint_playground(self):
         """Paint playground."""
         pass
 
     @abstractmethod
-    def _paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
+    def paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
         """Add individual large "pixels" onto scene/playground."""
         pass
 
@@ -87,15 +87,15 @@ class ColonyView2D(ColonyView):
             self.static_frame = np.full((self.frame_height, self.frame_width, 3), STAGE_BACKGROUND, dtype=np.uint8)
         return self.static_frame
 
-    def _paint_playground(self):
+    def paint_playground(self):
         """Paint playground.
         """
         for y in range(len(self.bitmap)):
             for x in range(len(self.bitmap[0])):
                 color = map_ref[self.bitmap[y][x]][-1]
-                self._paint_large_pixel(self.static_frame, y, x, color)
+                self.paint_large_pixel(self.static_frame, y, x, color)
 
-    def _paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
+    def paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
         """Paint a big pixel element on the given frame.
         """
         x_start = int(x * self.multiplier) + self.left_blank
@@ -114,7 +114,20 @@ class ColonyViewIso(ColonyView):
         # if colony shape is different from viewer shape, some spaces must be padded.
         self.left_blank: int = 0  # blank space on leftside
         self.top_blank: int = 0  # blank space on top
-        self.tile_height: float = 0  # fake-3D gets a Z metric, half height goes above a tile and the other half goes blow
+
+        # multiplier used for mapping isometric tile sizes
+        self.multiplier_iso: float = 0
+
+        # isometric tile shape (lenght of diagnoals, not sides of these dimond-shaped objects)
+        self.tile_width: float = 0
+        self.tile_height: float = 0
+
+        # fake-3D gets a Z metric, some depth goes above a tile and the rest goes blow
+        self.tile_upper_depth: float = 0
+        self.tile_lower_depth: float = 0
+        # offsets from edges, will be calculated later
+        self.width_offset: float = 0
+        self.height_offset: float = 0
 
         # figure out multiplier when projecting into isometric spaces
         self._figure_out_multiplier()
@@ -135,8 +148,8 @@ class ColonyViewIso(ColonyView):
         self.multiplier_iso = min(multiplier_x_iso, multiplier_y_iso)
     
         # calculate size of each tile. Not their sides but more like diagonals of the dimond shapes.
-        self.tile_width: float = self.multiplier_iso * ISO_TILE_WIDTH_SCALAR
-        self.tile_height: float = self.multiplier_iso * ISO_TILE_HEIGHT_SCALAR
+        self.tile_width = self.multiplier_iso * ISO_TILE_WIDTH_SCALAR
+        self.tile_height = self.multiplier_iso * ISO_TILE_HEIGHT_SCALAR
 
         # figure out blank paddings at top and left
         self.left_blank = int((self.frame_width - self.tile_width * self.width) / 2)
@@ -144,8 +157,8 @@ class ColonyViewIso(ColonyView):
 
         # height offset is needed to "shift" pixles to right by half of playground width
         # different maths requires x-shifting, but it's not the case here
-        self.width_offset: float = 0 + self.left_blank
-        self.height_offset: float = self.tile_height * self.height / 2 + self.top_blank
+        self.width_offset = 0 + self.left_blank
+        self.height_offset = self.tile_height * self.height / 2 + self.top_blank
 
 
     def _get_iso_coor(self, x: float, y: float):
@@ -179,14 +192,34 @@ class ColonyViewIso(ColonyView):
 
         return frame
 
-
     def get_static_frame(self):
+        """Paint background and do essential calculations.
+        """
         if not self.static_frame:
             self.static_frame = self._paint_isometric_static_frame()
         return self.static_frame
 
-    def _paint_playground(self):
+    def paint_playground(self):
+        """Paint the playground.
+        """
+        assert self.static_frame is not None, "Call get_static_frame first to paint a static frame."
+
+        # the loop order need to be modifed 
+        for y in range(len(self.bitmap)):
+            for x in range(len(self.bitmap[0]) - 1, 0 - 1, -1):
+                color = map_ref[self.bitmap[y][x]][-1]
+                self.paint_large_pixel(self.static_frame, y, x, color)
         return
 
-    def _paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
-        return
+    def paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
+
+        # the function adds blanks automatically
+        # four corners of each tile
+        ul: Tuple(int, int) = self._get_iso_coor(x, y) 
+        ur: Tuple(int, int) = self._get_iso_coor(x + 1, y)
+        ll: Tuple(int, int) = self._get_iso_coor(x, y + 1) 
+        lr: Tuple(int, int) = self._get_iso_coor(x + 1, y + 1)
+
+
+        contours = np.array([ul, ll, lr, ur])
+        cv2.fillPoly(frame, pts=[contours], color=color)
