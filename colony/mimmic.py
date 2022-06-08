@@ -4,15 +4,14 @@ import json
 import cv2
 import sys
 import os
-import time
-import numpy as np
+import tqdm
 
 from colony import Colony
 from step_visulizer import *
 from configuration import world_cfg
 
 
-target_folder = "/home/frank/Projects/ColonySim/frames"
+target_folder = "/Users/frank/Projects/ColonySim/frames"
 target_frame = 24 * 80
 
 # auto progression frames per second
@@ -22,6 +21,8 @@ auto_fps = 5
 WINDOW_NAME = str(world_cfg.setting_id)
 X = world_cfg.width
 Y = world_cfg.height
+VX = world_cfg.viewer_width
+VY = world_cfg.viewer_height
 INIT_POP = world_cfg.initial_population
 
 
@@ -35,12 +36,18 @@ if __name__ == '__main__':
 
     mode = 'interactive'
     #mode = 'dump'
-    mode = 'autoplay'
+    #mode = 'autoplay'
 
     # create a colony
-    chicken_col = Colony(width=X, height=Y, init_pop=INIT_POP, seed=0)
+    chicken_col = Colony(
+        width=X,
+        height=Y,
+        viewer_width=VX,
+        viewer_height=VY,
+        init_pop=INIT_POP,
+        seed=0)
     # plotting object
-    visualizer = StepVisulizer(chicken_col, multiplier=45)
+    visualizer = StepVisulizer(colony=chicken_col)
     
     cycle_counter = -1
     single_frame = visualizer.plot_step(cycle=cycle_counter) # returns an np.array
@@ -62,10 +69,8 @@ if __name__ == '__main__':
     # generate each step as a frame and save these images
     elif mode == "dump":
         frame = 0
-        while frame < target_frame:
-            cycle_counter += 1
-            frame += 1
-            
+        for frame in tqdm.tqdm(range(target_frame)):
+            cycle_counter += 1        
             colony_survived = chicken_col.progress_a_step()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
 
@@ -74,9 +79,9 @@ if __name__ == '__main__':
 
             if not colony_survived:
                 break
-
-
-        #os.system("ffmpeg -r 24 -i %05d.png -vcodec mpeg4 -y colony.mp4")
+        print("Frames generated, converting it to video...")
+        # ffmpeg -r 24 -i %05d.png -vcodec mpeg4 -y colony.mp4
+        #os.system(f"ffmpeg -r 24 -i {target_folder}/%05d.png -vcodec mpeg4 -y colony.mp4")
 
     # auto progression
     elif mode == "autoplay":
