@@ -1,6 +1,6 @@
 # ColonySim
 
-Just a fun toy programm a bit like game of life but I haven't spent much time on defining the rules of how a colony will grow/multiply/die out.  
+Just a toy program a bit like game of life but I haven't spent much time on defining the rules of how a colony will grow/multiply/die out.  
 
 Originally a pure 2D viewer was written; now added isometric viwer, too.  
 
