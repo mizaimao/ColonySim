@@ -4,6 +4,8 @@ import numpy as np
 from characters.spore import Spore
 from step_progression import *
 from configuration import spore_cfg
+from utils.info_manager import InfoManager
+
 
 sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}
 
@@ -25,7 +27,8 @@ class Colony:
                 viewer_width: int = 1440,
                 viewer_height: int = 900,
                 init_pop: int = 10,
-                seed: int = 0):
+                seed: int = 0,
+                verbose: bool = True):
         """
         Args:
             init_pop {int}: inital population. Now only two types which 
@@ -46,6 +49,7 @@ class Colony:
         self.current_pop = 0
         self.spores = {} # stores all shown spores
         self.info = ColonyGeneralInfo()
+        self.printer = InfoManager(silent_mode=(not verbose))
 
         self.step_record = [] # a record of each step
 
@@ -127,7 +131,7 @@ class Colony:
             self.step_record.append(self.step.copy())
 
         if not self._check_die_out():
-            print("Colony Failed")
+            self.printer.info("Colony failed, spores unable to reproduce.")
             return False
 
         # processed step placeholder
@@ -146,7 +150,7 @@ class Colony:
 
             # too crowded, triggering extinct on tile
             if crowd_size > spore_cfg.crowd_threshold: 
-                print("a crowd of spores dead caused by famine,", crowd_size)
+                self.printer.info(f"A crowd of {crowd_size} dead caused by famine,")
                 for spore_id in spores_in_tile:
                     del self.spores[spore_id]
                         
@@ -180,7 +184,7 @@ class Colony:
                         spore_pointer = self.spores[spore_id]
                         self.info.gender_counts[spore_pointer.sex] -= 1  # substract its gender counter
                         del self.spores[spore_id]
-                        print("a spore dead")
+                        self.printer.info("A spore dead in fighting.")
                         self.current_pop -= 1
                         spore_counter += 1
                         continue
@@ -205,7 +209,7 @@ class Colony:
                 self._create_individual(sex=sex,
                                         coor=neary_by_coor,
                                         step_dict=new_step)
-                print("a new baby was born, pop:", self.current_pop)
+                self.printer.info(f"A new baby was born, new pop: {self.current_pop}.")
 
         self.step = new_step
 

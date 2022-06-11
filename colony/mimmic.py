@@ -45,7 +45,8 @@ if __name__ == '__main__':
         viewer_width=VX,
         viewer_height=VY,
         init_pop=INIT_POP,
-        seed=0)
+        seed=0,
+        verbose=(mode!='dump'))
     # plotting object
     visualizer = StepVisulizer(colony=chicken_col)
     
@@ -60,7 +61,8 @@ if __name__ == '__main__':
             
             colony_survived: bool = chicken_col.progress_a_step()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
-            cv2.imshow(WINDOW_NAME, single_frame) 
+            cv2.imshow(WINDOW_NAME, single_frame)
+            chicken_col.printer.print_info()
             k = cv2.waitKey(0)
             if not colony_survived:
                 break
@@ -76,7 +78,7 @@ if __name__ == '__main__':
 
             out_name = os.path.join(target_folder, '%05d.png' % frame)
             cv2.imwrite(out_name, single_frame)
-
+            chicken_col.printer.print_info()
             if not colony_survived:
                 break
         print("Frames generated, converting it to video...")
@@ -91,7 +93,8 @@ if __name__ == '__main__':
             
             colony_survived = chicken_col.progress_a_step()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
-            cv2.imshow(WINDOW_NAME, single_frame) 
+            cv2.imshow(WINDOW_NAME, single_frame)
+            chicken_col.printer.print_info()
             key = cv2.waitKey(interval)  # this one controlls time interval
             if key > 0:
                 cv2.destroyAllWindows()
