@@ -1,9 +1,9 @@
 """Reference of numbers in map bitmap and definition.
 """
-from typing import Tuple
+from typing import Dict, Tuple
 
 # NOTE: color codes are in RGB
-map_ref: dict[int, Tuple] = {
+map_ref: Dict[int, Tuple] = {
     # 0-100 reserved for moviable objects
 
     # 101-200: vege

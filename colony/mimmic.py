@@ -6,9 +6,9 @@ import sys
 import os
 import tqdm
 
-from colony import Colony
-from step_visulizer import *
-from configuration import world_cfg
+from colony.colony_def import Colony
+from colony.step_visulizer import *
+from colony.configuration import world_cfg
 
 
 target_folder = "/Users/frank/Projects/ColonySim/frames"
