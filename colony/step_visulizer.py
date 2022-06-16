@@ -8,13 +8,15 @@ from population_plotter import PopulationCurve
 from configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 from scene_painter import ColonyView, ColonyView2D, ColonyViewIso
 
-painters = {
+painters: Dict[str, ColonyView] = {
     "2D": ColonyView2D,
     "isometric": ColonyViewIso,
 }
 
+POP_FONT: int = cv2.FONT_HERSHEY_DUPLEX
+
 # color in BGR 
-color_dict = {1: (245, 158, 66), 3: (95, 95, 250)}
+color_dict: Dict[int, Tuple[int, ...]] = {1: (245, 158, 66), 3: (95, 95, 250)}
 
 
 class StepVisulizer:
@@ -24,8 +26,8 @@ class StepVisulizer:
     def __init__(self,
                  colony: Colony,
                  map_cfg: MapSetup = map_cfg,
-                 world_cfg: WorldSetup = world_cfg,
-                 pop_curve: PopulationCurve = None):
+                 world_cfg: WorldSetup = world_cfg
+    ):
         """
         Args:
             colony {Colony} -- pointer to a colony object saved in memory
@@ -51,25 +53,20 @@ class StepVisulizer:
 
         self.multiplier = self.painter.multiplier
 
-
         # fixed values
-
         self.font_scalar = 0.05 * self.multiplier
         self.font_space = int(5 / 3 * self.multiplier)
         self.font_above = int(5 / 3 * self.multiplier)
         self.font_front = int(2 / 3 * self.multiplier)
-        
         # displaying info 
         self.info_pane_height = int(self.frame_height * 0.2) 
         self.left_info_pane_width = int(self.frame_width / 2)
         self.right_info_pane_width = self.frame_width - self.left_info_pane_width
         # pointers to objects in memory
         self.colony = colony
-        self.pop_curve = PopulationCurve()
-        self.pop_curve.setup(width=self.right_info_pane_width, height=self.info_pane_height)
+        self.pop_curve = PopulationCurve(width=self.right_info_pane_width, height=self.info_pane_height)
 
  
-
     def plot_step(self, cycle: int = -1):
         """
         Plot a step. Info is accessed by the pointer to colony object. 
@@ -100,10 +97,10 @@ class StepVisulizer:
         # left info pane
         left_info = np.full((self.info_pane_height, self.left_info_pane_width, 3), 220, dtype=np.uint8)
         cv2.putText(left_info, "Colony Size: {}".format(self.colony.current_pop),  # text
-            (self.font_front, self.font_above), cv2.FONT_HERSHEY_SIMPLEX, self.font_scalar, # font and scale
+            (self.font_front, self.font_above), POP_FONT, self.font_scalar, # font and scale
             (100, 100, 100), 3)  # linetype
         cv2.putText(left_info, "Cycle: {}".format(cycle), (self.font_front, self.font_above + self.font_space),  # pos
-            cv2.FONT_HERSHEY_SIMPLEX, self.font_scalar, 
+            POP_FONT, self.font_scalar, 
             (100, 100, 100), 3)  
 
         # right plot pane, making the curve plot
