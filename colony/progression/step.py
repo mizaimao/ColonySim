@@ -1,7 +1,7 @@
 import numpy as np
-from characters.spore import Spore
+from colony.characters.spore import Spore
 
-from configuration import spore_cfg
+from colony.configuration import spore_cfg
 
 
 def spore_step(direction: int, current_coor: tuple):

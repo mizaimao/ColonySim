@@ -1,11 +1,12 @@
 """Detailed map generation rules.
 """
 import yaml
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Dict, Tuple
 
-
-RULES = "configs/map_generator/rules.yaml"
+config_path = Path(__file__).parent
+RULES = config_path.joinpath("rules.yaml")
 
 @dataclass
 class GreenMapRules:

@@ -3,8 +3,8 @@
 import abc
 import re
 import numpy as np
-from configs.map_generator.rule_loader import GreenMapRules, load_rules
-from .map_element_gen.water_generator import add_single_waterbody
+from colony.configs.map_generator.rule_loader import GreenMapRules, load_rules
+from colony.generators.map_element_gen.water_generator import add_single_waterbody
 
 
 class GreenMapGenerator():

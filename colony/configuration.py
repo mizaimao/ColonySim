@@ -1,11 +1,13 @@
 """Holding multiple types of settings for importing.
 """
 import json
+from pathlib import Path
 from dataclasses import dataclass
 from typing import Any
 
 from colony.generators.map_generator import GreenMapGenerator
 
+config_path = Path(__file__).parent.joinpath("configs")
 map_generator_mapper: dict[str, Any] = {"green": GreenMapGenerator}
 
 
@@ -35,7 +37,7 @@ class SporeSettings:
 
 # objected shared in multiple places
 spore_cfg = SporeSettings(
-    **json.load(open("configs/spore_beheavoir/default.json", "r"))
+    **json.load(open(config_path.joinpath("spore_beheavoir/default.json"), "r"))
 )
 
 
@@ -51,7 +53,7 @@ class WorldSetup:
     viewer_height: int
 
 
-world_cfg = WorldSetup(**json.load(open("configs/world/default.json", "r")))
+world_cfg = WorldSetup(**json.load(open(config_path.joinpath("world/default.json"), "r")))
 
 
 @dataclass
@@ -83,5 +85,5 @@ class MapSetup:
 
 
 map_cfg = MapSetup(
-    json.load(open("configs/map_generator/default.json", "r")), world_cfg
+    json.load(open(config_path.joinpath("map_generator/default.json"), "r")), world_cfg
 )

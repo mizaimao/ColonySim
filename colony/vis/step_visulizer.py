@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Tuple, Union
 import cv2
 import numpy as np
 
-from configs.map_generator.ref import map_ref
+from colony.configs.map_generator.ref import map_ref
 from colony.characters.colony import Colony
 from colony.vis.population_plotter import PopulationCurve
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup

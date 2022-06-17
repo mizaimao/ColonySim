@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from math import sqrt
 
-from configs.map_generator.ref import map_ref
+from colony.configs.map_generator.ref import map_ref
 from colony.utils.color_helpers import shift_color
 
 
@@ -14,7 +14,7 @@ from colony.utils.color_helpers import shift_color
 ISO_UPPER: float = 0.05  # ratio to frame height
 ISO_LOWER: float = 0.05
 
-ISO_TILE_THICKNESS_SCALAR: float = 1.2  # raito to mega pixel size (height)
+ISO_TILE_THICKNESS_SCALAR: float = 1.0  # raito to mega pixel size (height)
 ISO_TILE_GRID_LINE_THICKNESS: int = 4
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
@@ -360,3 +360,14 @@ class ColonyViewIso(ColonyView):
             )
             if outline:
                 self._draw_tile_outlines(frame, contours)
+
+    def paint_large_pixel_image(
+        self,
+        frame: np.ndarray,
+        x: int,
+        y: int,
+        image: np.ndarray,
+    ):
+        """Paint a mega pixel from an image array.
+        """
+        return
