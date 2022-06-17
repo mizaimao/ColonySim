@@ -1,10 +1,11 @@
+import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, Tuple, List
-import numpy as np
-from characters.spore import Spore
-from step_progression import *
-from configuration import spore_cfg
-from utils.info_manager import InfoManager
+
+from colony.characters.spore import Spore
+from colony.step_progression import *
+from colony.configuration import spore_cfg
+from colony.utils.info_manager import InfoManager
 
 
 sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}

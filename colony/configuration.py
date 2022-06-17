@@ -3,7 +3,8 @@
 import json
 from dataclasses import dataclass
 from typing import Any
-from generators.map_generator import GreenMapGenerator
+
+from colony.generators.map_generator import GreenMapGenerator
 
 map_generator_mapper: dict[str, Any] = {"green": GreenMapGenerator}
 

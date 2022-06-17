@@ -1,7 +1,7 @@
 """Detailed map generation rules.
 """
-from dataclasses import dataclass
 import yaml
+from dataclasses import dataclass
 from typing import Dict, Tuple
 
 
