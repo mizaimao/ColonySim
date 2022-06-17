@@ -4,9 +4,9 @@ import numpy as np
 
 from configs.map_generator.ref import map_ref
 from colony_def import Colony
-from population_plotter import PopulationCurve
-from configuration import MapSetup, map_cfg, world_cfg, WorldSetup
-from scene_painter import ColonyView, ColonyView2D, ColonyViewIso
+from colony.vis.population_plotter import PopulationCurve
+from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
+from colony.vis.scene_painter import ColonyView, ColonyView2D, ColonyViewIso
 
 painters: Dict[str, ColonyView] = {
     "2D": ColonyView2D,
