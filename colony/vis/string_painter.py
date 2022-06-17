@@ -3,7 +3,9 @@ from typing import Callable, Dict, List, Tuple, Union
 import cv2
 import numpy as np
 
-POP_FONT: int = cv2.FONT_HERSHEY_DUPLEX
+from colony.characters.colony import Colony
+
+POP_FONT: int = cv2.FONT_HERSHEY_SIMPLEX
 POP_TEXT_COLOR: Tuple[int, ...] = (100, 100, 100, 0)
 POP_FONT_THICKNESS: int = 3
 
@@ -103,3 +105,7 @@ class StringPainter:
                 line_id += 1
             line = lines.pop(0)
         self._paint_single_info_string(frame=frame, line_id=line_id, string=line)
+
+
+def add_info_to_main_pane(colony: Colony, max_rows: int = 20, steps: int = 5):
+    return

@@ -7,7 +7,7 @@ from colony.characters.colony import Colony
 from colony.vis.population_plotter import PopulationCurve
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 from colony.vis.scene_painter import ColonyView, ColonyView2D, ColonyViewIso
-from colony.vis.string_painter import StringPainter
+from colony.vis.string_painter import StringPainter, add_info_to_main_pane
 
 painters: Dict[str, ColonyView] = {
     "2D": ColonyView2D,
@@ -71,7 +71,7 @@ class StepVisulizer:
             width=self.right_info_pane_width, height=self.info_pane_height
         )
 
-    def paint_main_viewer(self) -> np.ndarray:
+    def paint_main_viewer(self, with_info: bool = False) -> np.ndarray:
         """Paint the colony main viewer, i.e. the dots and playground.
         This mutates the input frame as a result of np.array manipulation.
         """
@@ -88,6 +88,10 @@ class StepVisulizer:
             # dye this block
             splore_color = color_dict[top_spore.sex]
             self.painter.paint_large_pixel(frame, x, y, splore_color)
+
+        if with_info:
+            add_info_to_main_pane(self.colony, steps=5, max_rows=20)
+
         return frame
 
     def paint_info_pane(self, cycle: int) -> np.ndarray:
@@ -117,7 +121,7 @@ class StepVisulizer:
             cycle: cycle number that will be displayed on info pane
         """        
         # paint viewer pane (upper pane)
-        viewer_pane: np.ndarray = self.paint_main_viewer()
+        viewer_pane: np.ndarray = self.paint_main_viewer(with_info=True)
 
         # paint lower panes
         # left info pane

@@ -16,22 +16,28 @@ class InfoManager:
             silent_mode: mute printing (e.g. program runs in frame-dumpping mode)
         """
         self.info_stack: List[str] = []
-        self.info_history: List[str] = []
+        self.info_history: List[List[str]] = []
 
         self.silent_mode: bool = silent_mode
 
+    def merge_stack(self):
+        """Push current stack to history.
+        """
+        self.info_history.append(self.info_stack.copy())
+        self.info_stack.clear()
+
+
     def print_info(self, force_print: bool = False):
-        """Print  each info saved in stack by order.
+        """Print each info saved in stack by order. This also transfers everything in stack to history.
 
         Args:
             force_print: overrides silent mode.
         """
-        while self.info_stack:
-            info_str: str = self.info_stack.pop(0)
-            self.info_history.append(info_str)
-
-            if (not self.silent_mode) or force_print:
+        if (not self.silent_mode) or force_print:
+            for info_str in self.info_stack:
                 print(info_str)
+        self.merge_stack()
+
 
     def info(self, info_str: str):
         """Add a single string to stack.
