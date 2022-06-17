@@ -12,13 +12,13 @@ from configs.map_generator.ref import map_ref
 ISO_UPPER: float = 0.05  # ratio to frame height
 ISO_LOWER: float = 0.05
 
-ISO_TILE_HEIGHT: float = 1.0  # raito to mega pixel size
+ISO_TILE_THICKNESS_SCALAR: float = 1.4  # raito to mega pixel size (height)
 ISO_TILE_GRID_LINE_THICKNESS: int = 4
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
 ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
-ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -60
-ISO_TILE_UPPER_right_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -30
+ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -40
+ISO_TILE_UPPER_right_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -20
 ISO_TILE_OUTLINE_THICKNESS: int = 1
 #ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
 ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210, ) * 3
@@ -179,8 +179,8 @@ class ColonyViewIso(ColonyView):
 
         # figure out tile depth above and below surface
         # simple case now, just cut them into halves
-        self.tile_upper_depth = self.tile_height / 2
-        self.tile_lower_depth = self.tile_height / 2
+        self.tile_upper_depth = self.tile_height / 2 * ISO_TILE_THICKNESS_SCALAR
+        self.tile_lower_depth = self.tile_height / 2 * ISO_TILE_THICKNESS_SCALAR
 
     def _get_iso_coor(self, x: float, y: float):
         """Convert bitmap coordinates to isometric coordinates.

@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Tuple, List
 
 from colony.characters.spore import Spore
-from colony.step_progression import *
+from colony.progression.step import *
 from colony.configuration import spore_cfg
 from colony.utils.info_manager import InfoManager
 
