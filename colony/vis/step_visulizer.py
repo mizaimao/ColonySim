@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, List, Tuple, Union
 import cv2
 import numpy as np
 
@@ -7,18 +7,15 @@ from colony.characters.colony import Colony
 from colony.vis.population_plotter import PopulationCurve
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 from colony.vis.scene_painter import ColonyView, ColonyView2D, ColonyViewIso
+from colony.vis.string_painter import StringPainter
 
 painters: Dict[str, ColonyView] = {
     "2D": ColonyView2D,
     "isometric": ColonyViewIso,
 }
 
-POP_FONT: int = cv2.FONT_HERSHEY_DUPLEX
-POP_TEXT_COLOR: Tuple[int, ...] = (100, 100, 100, 0)
-
 # color of players in BGR
 color_dict: Dict[int, Tuple[int, ...]] = {1: (245, 158, 66), 3: (95, 95, 250)}
-
 
 class StepVisulizer:
     """
@@ -32,19 +29,20 @@ class StepVisulizer:
         world_cfg: WorldSetup = world_cfg,
     ):
         """
-        Args:
-            colony {Colony} -- pointer to a colony object saved in memory
-            pop_curve {PopulationCurve} -- pointer to a curve plotting object in memory
+        Args
+            colony: pointer to a colony object saved in memory
+            pop_curve: pointer to a curve plotting object in memory
         """
         # setup painter
-        self.colony = colony
-        self.bitmap = map_cfg.bitmap
-        self.frame_height = colony.viewer_height
-        self.frame_width = colony.viewer_width
+        self.colony: Colony = colony
+        self.bitmap: np.ndarray = map_cfg.bitmap
+        self.frame_height: int = colony.viewer_height
+        self.frame_width: int = colony.viewer_width
 
         painter_class = painters["isometric"]
         # painter_class = painters["2D"]
 
+        self.string_painter: StringPainter = StringPainter()
         self.painter = painter_class(
             self.colony.width,
             self.colony.height,
@@ -55,17 +53,18 @@ class StepVisulizer:
         self.static_frame = self.painter.get_static_frame()
         self.painter.paint_playground()
 
-        self.multiplier = self.painter.multiplier
+        self.multiplier: float = self.painter.multiplier
 
+        # info pane sizes
+        self.info_pane_height: int = int(self.frame_height * 0.2)
+        self.left_info_pane_width: int = int(self.frame_width / 2)
+        self.right_info_pane_width: int = self.frame_width - self.left_info_pane_width
         # fixed values
-        self.font_scalar = 0.05 * self.multiplier
-        self.font_space = int(5 / 3 * self.multiplier)
-        self.font_above = int(5 / 3 * self.multiplier)
-        self.font_front = int(2 / 3 * self.multiplier)
-        # displaying info
-        self.info_pane_height = int(self.frame_height * 0.2)
-        self.left_info_pane_width = int(self.frame_width / 2)
-        self.right_info_pane_width = self.frame_width - self.left_info_pane_width
+
+        #self.font_scalar: float = 0.05 * self.multiplier * self.info_pane_height
+        self.font_space: int = int(5 / 3 * self.multiplier)
+        self.font_above: int = int(5 / 3 * self.multiplier)
+        self.font_front: int = int(2 / 3 * self.multiplier)
         # pointers to objects in memory
         self.colony = colony
         self.pop_curve = PopulationCurve(
@@ -97,26 +96,12 @@ class StepVisulizer:
         left_info: np.ndarray = np.full(
             (self.info_pane_height, self.left_info_pane_width, 3), 220, dtype=np.uint8
         )
-        # add colony size info
-        cv2.putText(
-            left_info,
-            "Colony Size: {}".format(self.colony.current_pop),  # size counter
-            (self.font_front, self.font_above),  # position
-            POP_FONT,
-            self.font_scalar,  # font and scale
-            POP_TEXT_COLOR,
-            3,
-        )
-        # add population info
-        cv2.putText(
-            left_info,
-            "Cycle: {}".format(cycle),  # cycle counter
-            (self.font_front, self.font_above + self.font_space),  # pos
-            POP_FONT,
-            self.font_scalar,
-            POP_TEXT_COLOR,
-            3,
-        )
+        # build text info
+        colony_size_info = "Colony Size: {}".format(self.colony.current_pop)
+        colony_cycle_info = "Cycle: {}".format(cycle)
+        # add text info to pane
+        self.string_painter.paint_lines(left_info, [colony_size_info, colony_cycle_info])
+
         return left_info
 
     def plot_step(self, cycle: int = -1):
@@ -129,7 +114,7 @@ class StepVisulizer:
                 right pane showing population curve
 
         Args:
-            cycle {int} -- cycle number that will be displayed on info pane
+            cycle: cycle number that will be displayed on info pane
         """        
         # paint viewer pane (upper pane)
         viewer_pane: np.ndarray = self.paint_main_viewer()
