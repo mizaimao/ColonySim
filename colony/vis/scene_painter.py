@@ -2,7 +2,6 @@
 """
 from abc import ABC, abstractmethod
 from typing import Callable, List, Tuple, Union
-from black import out
 import cv2
 import numpy as np
 from math import sqrt
@@ -23,7 +22,7 @@ ISO_TILE_OUTLINE_THICKNESS: int = 1
 #ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
 ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210, ) * 3
 
-DIRT_COLOR: Tuple[float, ...] = (183, 118, 155)  # BGR for sake of opencv
+DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
 
 # no alpha channel
 STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (202, 193, 103)# color for stage level background
