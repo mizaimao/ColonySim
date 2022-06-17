@@ -125,7 +125,7 @@ class StepVisulizer:
         info_pane: np.ndarray = self.paint_info_pane(cycle)
 
         # right plot pane, making the curve plot
-        pop_curve: np.ndarray = self.pop_curve.update_and_plot(self.colony.current_pop)
+        pop_curve: np.ndarray = self.pop_curve.draw_colony_curves(self.colony)
 
         # put two panes together
         below_addon = np.concatenate([info_pane, pop_curve], axis=1)
