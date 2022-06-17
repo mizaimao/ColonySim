@@ -72,6 +72,53 @@ class StepVisulizer:
             width=self.right_info_pane_width, height=self.info_pane_height
         )
 
+    def paint_main_viewer(self) -> np.ndarray:
+        """Paint the colony main viewer, i.e. the dots and playground.
+        This mutates the input frame as a result of np.array manipulation.
+        """
+        # make a copy of raw background
+        frame = self.static_frame.copy()
+        # need to sort spores to paint them in a correct order, this is needed for isometrci viewing
+        _tempList = sorted(self.colony.step.keys(), key=lambda x: x[0], reverse=True)
+        step_sorted = sorted(_tempList, key=lambda x: x[1])
+        # paint all spores
+        for (x, y) in step_sorted:
+            spores = self.colony.step[(x, y)]
+            # show only the first spore
+            top_spore = self.colony.spores[spores[0]]
+            # dye this block
+            splore_color = color_dict[top_spore.sex]
+            self.painter.paint_large_pixel(frame, x, y, splore_color)
+        return frame
+
+    def paint_info_pane(self, cycle: int) -> np.ndarray:
+        """Paint infomation pane, containing items like cycle count and population.
+        """
+        left_info: np.ndarray = np.full(
+            (self.info_pane_height, self.left_info_pane_width, 3), 220, dtype=np.uint8
+        )
+        # add colony size info
+        cv2.putText(
+            left_info,
+            "Colony Size: {}".format(self.colony.current_pop),  # size counter
+            (self.font_front, self.font_above),  # position
+            POP_FONT,
+            self.font_scalar,  # font and scale
+            POP_TEXT_COLOR,
+            3,
+        )
+        # add population info
+        cv2.putText(
+            left_info,
+            "Cycle: {}".format(cycle),  # cycle counter
+            (self.font_front, self.font_above + self.font_space),  # pos
+            POP_FONT,
+            self.font_scalar,
+            POP_TEXT_COLOR,
+            3,
+        )
+        return left_info
+
     def plot_step(self, cycle: int = -1):
         """
         Plot a step. Info is accessed by the pointer to colony object.
@@ -83,48 +130,17 @@ class StepVisulizer:
 
         Args:
             cycle {int} -- cycle number that will be displayed on info pane
-        """
-        frame = self.static_frame.copy()
-        # need to sort spores to paint them in a correct order, this is needed for isometrci viewing
-        _tempList = sorted(self.colony.step.keys(), key=lambda x: x[0], reverse=True)
-        step_sorted = sorted(_tempList, key=lambda x: x[1])
+        """        
+        # paint viewer pane (upper pane)
+        viewer_pane: np.ndarray = self.paint_main_viewer()
 
-        # upper pane, paint all spores
-        for (x, y) in step_sorted:
-            spores = self.colony.step[(x, y)]
-            # show only the first spore
-            top_spore = self.colony.spores[spores[0]]
-            # dye this block
-            splore_color = color_dict[top_spore.sex]
-            self.painter.paint_large_pixel(frame, x, y, splore_color)
-
-        # lower panes
+        # paint lower panes
         # left info pane
-        left_info = np.full(
-            (self.info_pane_height, self.left_info_pane_width, 3), 220, dtype=np.uint8
-        )
-        cv2.putText(
-            left_info,
-            "Colony Size: {}".format(self.colony.current_pop),  # size counter
-            (self.font_front, self.font_above),  # position
-            POP_FONT,
-            self.font_scalar,  # font and scale
-            POP_TEXT_COLOR,
-            3,
-        )  # linetype
-        cv2.putText(
-            left_info,
-            "Cycle: {}".format(cycle),  # cycle counter
-            (self.font_front, self.font_above + self.font_space),  # pos
-            POP_FONT,
-            self.font_scalar,
-            POP_TEXT_COLOR,
-            3,
-        )
+        info_pane: np.ndarray = self.paint_info_pane(cycle)
 
         # right plot pane, making the curve plot
-        right_plot = self.pop_curve.update_and_plot(self.colony.current_pop)
+        pop_curve: np.ndarray = self.pop_curve.update_and_plot(self.colony.current_pop)
 
         # put two panes together
-        below_addon = np.concatenate([left_info, right_plot], axis=1)
-        return np.concatenate([frame, below_addon], axis=0)
+        below_addon = np.concatenate([info_pane, pop_curve], axis=1)
+        return np.concatenate([viewer_pane, below_addon], axis=0)

@@ -12,7 +12,7 @@ from configs.map_generator.ref import map_ref
 ISO_UPPER: float = 0.05  # ratio to frame height
 ISO_LOWER: float = 0.05
 
-ISO_TILE_THICKNESS_SCALAR: float = 1.4  # raito to mega pixel size (height)
+ISO_TILE_THICKNESS_SCALAR: float = 1.2  # raito to mega pixel size (height)
 ISO_TILE_GRID_LINE_THICKNESS: int = 4
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
