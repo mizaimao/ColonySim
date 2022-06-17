@@ -7,11 +7,15 @@ import cv2
 from colony.characters.colony import Colony
 
 
+# common settings
 POP_PANE_COLOR: Union[int, Tuple[int, ...]] = 220
-POP_CURVE_COLOR: Tuple[int, ...] = (97, 52, 107)
+UNASSIGNED_CURVE_COLOR: Tuple[int, ...] = (255, 255, 255)
 CURVE_THICKNESS: int = 1
 THICK_CURVE_THICKNESS: int = 2
 DATA_POINT_LIMIT: int = 128  # lines to draw is DATA_POINTS - 1
+
+# stat type specific settings
+POP_CURVE_COLOR: Tuple[int, ...] = (97, 52, 107)
 
 
 @dataclass
@@ -22,6 +26,8 @@ class StatTracker:
 
     prev_high: int = 0
     data: List[int] = field(default_factory=lambda: [])  # queue
+    color: Tuple[int, ...] = UNASSIGNED_CURVE_COLOR
+    thickness: int = CURVE_THICKNESS
 
 
 class PopulationCurve:
@@ -38,7 +44,7 @@ class PopulationCurve:
         self.plottable_height: int = int(self.height * 0.90)
         self.line_spacing: int = int(self.width / DATA_POINT_LIMIT)
 
-        self.population_tracker: StatTracker = StatTracker()
+        self.population_tracker: StatTracker = StatTracker(color=POP_CURVE_COLOR)
 
     def normalized_height(self, value: float, tracker: StatTracker) -> int:
         """Get normalized value compared with record high."""
@@ -75,8 +81,8 @@ class PopulationCurve:
             frame,
             [np.array(line_dots)],
             isClosed=False,
-            color=POP_CURVE_COLOR,
-            thickness=CURVE_THICKNESS,
+            color=tracker.color,
+            thickness=tracker.thickness,
         )
 
     def draw_colony_curves(self, colony: Colony) -> np.ndarray:
