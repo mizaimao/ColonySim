@@ -54,8 +54,7 @@ class StringPainter:
         """Add a single line to frame and use line_id to find position."""
         if string is None:
             string = " "
-        print("printing", string, "at", str((0, self.pixel_per_line * line_id)))
-        print(frame.shape)
+
         cv2.putText(
             frame,
             " " * self.front_spaces + string,
