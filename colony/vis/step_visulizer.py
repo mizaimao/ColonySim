@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 
 from configs.map_generator.ref import map_ref
-from colony_def import Colony
+from colony.characters.colony import Colony
 from colony.vis.population_plotter import PopulationCurve
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 from colony.vis.scene_painter import ColonyView, ColonyView2D, ColonyViewIso

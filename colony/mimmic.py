@@ -6,8 +6,8 @@ import sys
 import os
 import tqdm
 
-from colony.colony_def import Colony
-from colony.vis.step_visulizer import *
+from colony.characters.colony import Colony
+from colony.vis.step_visulizer import StepVisulizer
 from colony.configuration import world_cfg
 
 
