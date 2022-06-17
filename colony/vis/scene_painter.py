@@ -5,7 +5,10 @@ from typing import Callable, List, Tuple, Union
 import cv2
 import numpy as np
 from math import sqrt
+
 from configs.map_generator.ref import map_ref
+from colony.utils.color_helpers import shift_color
+
 
 # artifacial upper and lower blanks
 ISO_UPPER: float = 0.05  # ratio to frame height
@@ -263,26 +266,6 @@ class ColonyViewIso(ColonyView):
         cv2.fillPoly(frame, pts=[contours], color=color)
 
     @staticmethod
-    def _shift_color(color: Tuple[int, ...], shift: Union[int, Tuple[int, ...]]):
-        if isinstance(shift, Tuple):
-            assert len(shift) == len(
-                color
-            ), "color and shift should have the same amout of channels."
-            _new_color_0: List[int] = [sum(c + s) for c, s in zip(color, shift)]
-        else:
-            _new_color_0 = [c + shift for c in color]
-        _new_color_2: List[int] = []
-        for c in _new_color_0:
-            if c > 255:
-                _new_color_2.append(255)
-            elif c < 0:
-                _new_color_2.append(0)
-            else:
-                _new_color_2.append(c)
-
-        return tuple(_new_color_2)
-
-    @staticmethod
     def _draw_tile_outlines(frame: np.ndarray, contours: np.ndarray):
             cv2.line(frame, contours[0], contours[1], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
             cv2.line(frame, contours[1], contours[2], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
@@ -339,7 +322,7 @@ class ColonyViewIso(ColonyView):
             cv2.fillPoly(
                 frame,
                 pts=[contours],
-                color=self._shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                color=shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
             )
             if outline:
                 self._draw_tile_outlines(frame, contours)
@@ -350,7 +333,7 @@ class ColonyViewIso(ColonyView):
             cv2.fillPoly(
                 frame,
                 pts=[contours],
-                color=self._shift_color(color, ISO_TILE_UPPER_right_COLOR_SHIFT),
+                color=shift_color(color, ISO_TILE_UPPER_right_COLOR_SHIFT),
             )
             if outline:
                 self._draw_tile_outlines(frame, contours)
@@ -361,7 +344,7 @@ class ColonyViewIso(ColonyView):
             cv2.fillPoly(
                 frame,
                 pts=[contours],
-                color=self._shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                color=shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
             )
             if outline:
                 self._draw_tile_outlines(frame, contours)
@@ -373,7 +356,7 @@ class ColonyViewIso(ColonyView):
             cv2.fillPoly(
                 frame,
                 pts=[contours],
-                color=self._shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                color=shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
             )
             if outline:
                 self._draw_tile_outlines(frame, contours)

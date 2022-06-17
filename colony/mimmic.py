@@ -60,9 +60,9 @@ if __name__ == '__main__':
             cycle_counter += 1
             
             colony_survived: bool = chicken_col.progress_a_step()
+            chicken_col.printer.print_info()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
             cv2.imshow(WINDOW_NAME, single_frame)
-            chicken_col.printer.print_info()
             k = cv2.waitKey(0)
             if not colony_survived:
                 break
@@ -74,11 +74,11 @@ if __name__ == '__main__':
         for frame in tqdm.tqdm(range(target_frame)):
             cycle_counter += 1        
             colony_survived = chicken_col.progress_a_step()
+            chicken_col.printer.print_info()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
 
             out_name = os.path.join(target_folder, '%05d.png' % frame)
             cv2.imwrite(out_name, single_frame)
-            chicken_col.printer.print_info()
             if not colony_survived:
                 break
         print("Frames generated, converting it to video...")
@@ -92,9 +92,9 @@ if __name__ == '__main__':
             cycle_counter += 1
             
             colony_survived = chicken_col.progress_a_step()
+            chicken_col.printer.print_info()
             single_frame = visualizer.plot_step(cycle=cycle_counter)
             cv2.imshow(WINDOW_NAME, single_frame)
-            chicken_col.printer.print_info()
             key = cv2.waitKey(interval)  # this one controlls time interval
             if key > 0:
                 cv2.destroyAllWindows()

@@ -43,6 +43,8 @@ class StepVisulizer:
         # painter_class = painters["2D"]
 
         self.string_painter: StringPainter = StringPainter()
+        self.main_view_string_painter: StringPainter = None
+
         self.painter = painter_class(
             self.colony.width,
             self.colony.height,
@@ -90,7 +92,7 @@ class StepVisulizer:
             self.painter.paint_large_pixel(frame, x, y, splore_color)
 
         if with_info:
-            add_info_to_main_pane(self.colony, steps=5, max_rows=20)
+            self.main_view_string_painter = add_info_to_main_pane(self.main_view_string_painter, self.colony, frame, steps=5, max_rows=20)
 
         return frame
 
@@ -121,7 +123,7 @@ class StepVisulizer:
             cycle: cycle number that will be displayed on info pane
         """        
         # paint viewer pane (upper pane)
-        viewer_pane: np.ndarray = self.paint_main_viewer(with_info=True)
+        viewer_pane: np.ndarray = self.paint_main_viewer(with_info=False)  # with_info enables on-screen print
 
         # paint lower panes
         # left info pane
