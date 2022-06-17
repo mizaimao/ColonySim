@@ -61,12 +61,7 @@ class StepVisulizer:
         self.info_pane_height: int = int(self.frame_height * 0.2)
         self.left_info_pane_width: int = int(self.frame_width / 2)
         self.right_info_pane_width: int = self.frame_width - self.left_info_pane_width
-        # fixed values
 
-        #self.font_scalar: float = 0.05 * self.multiplier * self.info_pane_height
-        self.font_space: int = int(5 / 3 * self.multiplier)
-        self.font_above: int = int(5 / 3 * self.multiplier)
-        self.font_front: int = int(2 / 3 * self.multiplier)
         # pointers to objects in memory
         self.colony = colony
         self.pop_curve = PopulationCurve(
