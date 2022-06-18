@@ -22,13 +22,13 @@ ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
 ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -40
 ISO_TILE_UPPER_right_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -20
 ISO_TILE_OUTLINE_THICKNESS: int = 1
-#ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
-ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210, ) * 3
+# ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
+ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210,) * 3
 
 DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
 
 # no alpha channel
-STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (202, 193, 103)# color for stage level background
+STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (202, 193, 103)  # color for stage level background
 
 
 class ColonyView(ABC):
@@ -199,8 +199,18 @@ class ColonyViewIso(ColonyView):
         )
         return (new_x, new_y)
 
+    def _get_iso_coor_set(self, x: float, y: float) -> Tuple[Tuple[int, int], ...]:
+        """Get projected four corners of a tile, that is,
+        (x, x), (x + 1, y), (x + 1, y + 1) and (x, y + 1)
+        """
+        ul: Tuple[int, int] = self._get_iso_coor(x, y)
+        ur: Tuple[int, int] = self._get_iso_coor(x + 1, y)
+        ll: Tuple[int, int] = self._get_iso_coor(x, y + 1)
+        lr: Tuple[int, int] = self._get_iso_coor(x + 1, y + 1)
+        return (ul, ur, ll, lr)
+
     def _paint_grid_lines(self, frame: np.ndarray):
-        """Not used. 
+        """
         Draw grid lines for debugging purposes.
         """
         # add x grid lines to frame
@@ -237,7 +247,7 @@ class ColonyViewIso(ColonyView):
 
     def get_static_frame(self):
         """Paint background and do essential calculations."""
-        if not self.static_frame:
+        if self.static_frame is None:
             self.static_frame = self._paint_isometric_static_frame()
         return self.static_frame
 
@@ -254,23 +264,35 @@ class ColonyViewIso(ColonyView):
                 self.paint_large_pixel(self.static_frame, y, x, color, background=True)
         return
 
+    @staticmethod
+    def _add_alpha_if_necessary(image: np.ndarray):
+        """Add one alpha channel (value==255) if necessary."""
+        if image.shape[-1] == 3:  # three-channel image
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)  # it's BGR but whatever
+        return image
+
+    @staticmethod
+    def _resize_image_by_width(image: np.ndarray, width: int):
+        """Resize image with width while retaining aspect ratio."""
+        org_w, org_h, _ = image.shape
+        org_ratio: float = org_h / org_w
+        return cv2.resize(image, (width, int(width * org_ratio)))
+
     def paint_large_pixel_plane(self, frame: np.ndarray, x: int, y: int, color: Tuple):
         """Draw mega pixel without depth info, just overlay them on a plane"""
         # the function adds blanks automatically
         # four corners of each tile
-        ul: Tuple(int, int) = self._get_iso_coor(x, y)
-        ur: Tuple(int, int) = self._get_iso_coor(x + 1, y)
-        ll: Tuple(int, int) = self._get_iso_coor(x, y + 1)
-        lr: Tuple(int, int) = self._get_iso_coor(x + 1, y + 1)
+        ul, ur, ll, lr = self._get_iso_coor_set(x, y)
         contours = np.array([ul, ll, lr, ur])
         cv2.fillPoly(frame, pts=[contours], color=color)
 
     @staticmethod
     def _draw_tile_outlines(frame: np.ndarray, contours: np.ndarray):
-            cv2.line(frame, contours[0], contours[1], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
-            cv2.line(frame, contours[1], contours[2], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
-            cv2.line(frame, contours[2], contours[3], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
-            cv2.line(frame, contours[3], contours[0], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+        """Draw four outlines."""
+        cv2.line(frame, contours[0], contours[1], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+        cv2.line(frame, contours[1], contours[2], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+        cv2.line(frame, contours[2], contours[3], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+        cv2.line(frame, contours[3], contours[0], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
 
     def paint_large_pixel(
         self,
@@ -299,10 +321,7 @@ class ColonyViewIso(ColonyView):
         upper_depth_shifter_half = int(upper_depth_shifter / 2)
 
         # four original corners of each tile
-        ul: Tuple(int, int) = self._get_iso_coor(x, y)
-        ur: Tuple(int, int) = self._get_iso_coor(x + 1, y)
-        ll: Tuple(int, int) = self._get_iso_coor(x, y + 1)
-        lr: Tuple(int, int) = self._get_iso_coor(x + 1, y + 1)
+        ul, ur, ll, lr = self._get_iso_coor_set(x, y)
 
         shifter: Tuple[int, int] = (0, upper_depth_shifter)
         half_shifter: Tuple[int, int] = (0, upper_depth_shifter_half)
@@ -349,7 +368,6 @@ class ColonyViewIso(ColonyView):
             if outline:
                 self._draw_tile_outlines(frame, contours)
 
-
         # underground right side
         if background and (y == self.height - 1):
             contours = np.array([ll, lr, lr, ll]) + [shifter, shifter, half_shifter, half_shifter]
@@ -361,7 +379,7 @@ class ColonyViewIso(ColonyView):
             if outline:
                 self._draw_tile_outlines(frame, contours)
 
-    def paint_large_pixel_image(
+    def paint_image_as_large_pixel(
         self,
         frame: np.ndarray,
         x: int,
@@ -369,5 +387,37 @@ class ColonyViewIso(ColonyView):
         image: np.ndarray,
     ):
         """Paint a mega pixel from an image array.
+        Caller need to accept a return value as the operation is not in-place.
+        NOTE: I may messed up with what is x and what is y. Consequently, statements work but
+        variables may not have correct names. lol.
         """
-        return
+        # four original corners of each tile
+        ul, ur, ll, lr = self._get_iso_coor_set(x, y)
+
+        width: int = abs(ul[0] - lr[0])
+        replace_x: int = ll[1]
+        replace_y: int = lr[0]
+
+        overlay_image = self._resize_image_by_width(image, width)
+        img_width, img_height, _ = overlay_image.shape
+
+        overlayed_part = frame[
+            replace_x - img_width : replace_x, replace_y - img_height : replace_y
+        ]
+        # cropping and replacing
+        np.multiply(
+            overlayed_part,
+            np.atleast_3d(255 - overlay_image[:, :, 3]) / 255.0,
+            out=overlayed_part,
+            casting="unsafe",
+        )
+        np.add(
+            overlayed_part,
+            overlay_image[:, :, 0:3] * np.atleast_3d(overlay_image[:, :, 3]),
+            out=overlayed_part,
+        )
+        # put the changed image back into the scene
+        frame[
+            replace_x - img_width : replace_x, replace_y - img_height : replace_y
+        ] = overlayed_part
+        return frame
