@@ -209,7 +209,10 @@ def add_info_to_main_pane(
 
 
 class InfoPanePainter:
+    """Small class to handle colony info pane printing by calling a StringPainter instance.
+    """
     def __init__(self, width: int, height: int, background: Union[int, Tuple[int, ...]] = INFO_PANE_COLOR):
+        """Just normal setup stuffs."""
         self.width: int = width
         self.height: int = height
         self.background: Tuple[int, ...] = background
@@ -222,6 +225,8 @@ class InfoPanePainter:
         assert self.channel == 3 or self.channel == 4, "Background should be of 3 or 4 channels."
 
     def paint_lines(self, lines: List[str]):
+        """Main interface called from outside."""
         frame: np.ndarray = np.full((self.height, self.width, self.channel), self.background, dtype=np.uint8)
         self.string_painter.paint_lines(frame=frame, lines=lines)
         return frame
+    

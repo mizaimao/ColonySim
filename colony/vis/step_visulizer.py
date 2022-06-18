@@ -15,11 +15,7 @@ class StepVisulizer:
     Visualize a single step in colony. Builds and merges multiple panes to form a unified viewer.
     """
 
-    def __init__(
-        self,
-        colony: Colony,
-        map_cfg: MapSetup = map_cfg,
-    ):
+    def __init__(self, colony: Colony, map_cfg: MapSetup = map_cfg):
         """
         Args
             colony: pointer to a colony object saved in memory
