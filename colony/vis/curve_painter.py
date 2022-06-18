@@ -30,7 +30,7 @@ class StatTracker:
     thickness: int = CURVE_THICKNESS
 
 
-class PopulationCurve:
+class CurvePainter:
     """
     Plot a curve (more precisely, a series of discreted dots)
     """

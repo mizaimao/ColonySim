@@ -1,33 +1,29 @@
 from typing import Callable, Dict, List, Tuple, Union
-import cv2
 import numpy as np
 
 from colony.configs.map_generator.ref import map_ref
 from colony.characters.colony import Colony
-from colony.vis.population_plotter import PopulationCurve
+from colony.vis.curve_painter import CurvePainter
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 
 from colony.vis.main_scene_painter import MainScenePainter
 from colony.vis.string_painter import StringPainter, add_info_to_main_pane
 
 
-
-
 class StepVisulizer:
     """
-    Visualize a single step in colony
+    Visualize a single step in colony. Builds and merges multiple panes to form a unified viewer.
     """
 
     def __init__(
         self,
         colony: Colony,
         map_cfg: MapSetup = map_cfg,
-        world_cfg: WorldSetup = world_cfg,
     ):
         """
         Args
             colony: pointer to a colony object saved in memory
-            pop_curve: pointer to a curve plotting object in memory
+            map_cfg: map configuration instance
         """
 
         self.colony: Colony = colony
@@ -55,7 +51,7 @@ class StepVisulizer:
         # colony debugging info painter (overlays upper pane)
         self.main_view_string_painter: StringPainter = None
         # pop curve painter
-        self.pop_curve = PopulationCurve(self.right_info_pane_width, self.info_pane_height)
+        self.curve_painter = CurvePainter(self.right_info_pane_width, self.info_pane_height)
 
     def paint_main_viewer(self, with_info: bool = False) -> np.ndarray:
         """Paint the colony main viewer, i.e. the dots and playground.
@@ -100,8 +96,8 @@ class StepVisulizer:
         info_pane: np.ndarray = self.paint_info_pane(cycle)
 
         # right plot pane, making the curve plot
-        pop_curve: np.ndarray = self.pop_curve.draw_colony_curves(self.colony)
+        curve_pane: np.ndarray = self.curve_painter.draw_colony_curves(self.colony)
 
         # put two panes together
-        below_addon = np.concatenate([info_pane, pop_curve], axis=1)
+        below_addon = np.concatenate([info_pane, curve_pane], axis=1)
         return np.concatenate([viewer_pane, below_addon], axis=0)
