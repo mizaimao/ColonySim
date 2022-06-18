@@ -403,19 +403,12 @@ class ColonyViewIso(ColonyView):
         overlayed_part = frame[
             replace_x - img_width : replace_x, replace_y - img_height : replace_y
         ]
-        # cropping and replacing
-        np.multiply(
-            overlayed_part,
-            np.atleast_3d(255 - overlay_image[:, :, 3]) / 255.0,
-            out=overlayed_part,
-            casting="unsafe",
-        )
-        np.add(
-            overlayed_part,
-            overlay_image[:, :, 0:3] * np.atleast_3d(overlay_image[:, :, 3]),
-            out=overlayed_part,
-        )
-        # put the changed image back into the scene
+        # crop overlapping part and fill with zero for addition operation
+        overlayed_part[np.where(overlay_image[:, :, 3] > 0)] = (0, 0, 0)
+        # add overlaying image (but without alpha) to zero filled regions
+        np.add(overlayed_part, overlay_image[:, :, :3], out=overlayed_part)
+        
+        # put the changed part back
         frame[
             replace_x - img_width : replace_x, replace_y - img_height : replace_y
         ] = overlayed_part
