@@ -51,7 +51,7 @@ if __name__ == '__main__':
     visualizer = StepVisulizer(colony=chicken_col)
     
     cycle_counter = -1
-    single_frame = visualizer.plot_step(cycle=cycle_counter) # returns an np.array
+    single_frame = visualizer.plot_step() # returns an np.array
 
     # manual progression by pressing a key
     if mode == "interactive":        
@@ -61,7 +61,7 @@ if __name__ == '__main__':
             
             colony_survived: bool = chicken_col.progress_a_step()
             chicken_col.printer.print_info()
-            single_frame = visualizer.plot_step(cycle=cycle_counter)
+            single_frame = visualizer.plot_step()
             cv2.imshow(WINDOW_NAME, single_frame)
             k = cv2.waitKey(0)
             if not colony_survived:
@@ -75,7 +75,7 @@ if __name__ == '__main__':
             cycle_counter += 1        
             colony_survived = chicken_col.progress_a_step()
             chicken_col.printer.print_info()
-            single_frame = visualizer.plot_step(cycle=cycle_counter)
+            single_frame = visualizer.plot_step()
 
             out_name = os.path.join(target_folder, '%05d.png' % frame)
             cv2.imwrite(out_name, single_frame)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
             
             colony_survived = chicken_col.progress_a_step()
             chicken_col.printer.print_info()
-            single_frame = visualizer.plot_step(cycle=cycle_counter)
+            single_frame = visualizer.plot_step()
             cv2.imshow(WINDOW_NAME, single_frame)
             key = cv2.waitKey(interval)  # this one controlls time interval
             if key > 0:

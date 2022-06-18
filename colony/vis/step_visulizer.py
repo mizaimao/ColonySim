@@ -61,18 +61,19 @@ class StepVisulizer:
             self.main_view_string_painter = add_info_to_main_pane(self.main_view_string_painter, self.colony, frame, steps=5, max_rows=20)
         return frame
 
-    def paint_info_pane(self, cycle: int) -> np.ndarray:
+    def paint_info_pane(self) -> np.ndarray:
         """Paint infomation pane, containing items like cycle count and population.
         """
         colony_size_info = "Colony Size: {}".format(self.colony.current_pop)
-        colony_cycle_info = "Cycle: {}".format(cycle)
+        colony_cycle_info = "Iteration: {}".format(self.colony.current_iteration)
         # # add text info to pane
         left_info = self.info_pane_painter.paint_lines([colony_size_info, colony_cycle_info])
         return left_info
 
-    def plot_step(self, cycle: int = -1):
+    def plot_step(self):
         """
         Plot a step. Info is accessed by the pointer to colony object.
+
         The plot is made of upper and lower parts:
             upper part contains enlarged representation of current tiles
             lower part contains two panes
@@ -87,7 +88,7 @@ class StepVisulizer:
 
         # paint lower panes
         # left info pane
-        info_pane: np.ndarray = self.paint_info_pane(cycle)
+        info_pane: np.ndarray = self.paint_info_pane()
 
         # right plot pane, making the curve plot
         curve_pane: np.ndarray = self.curve_painter.draw_colony_curves(self.colony)

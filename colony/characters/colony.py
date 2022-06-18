@@ -39,24 +39,23 @@ class Colony:
             enable_history {bool}: record each step colony takes.
             
         """
-        self.width = width
-        self.height = height
-        self.viewer_width = viewer_width
-        self.viewer_height = viewer_height
-        self.allow_init_overlapping = True
-        self.enable_history = False
-        self.step = {}
-        self.id_counter = 0
-        self.current_pop = 0
-        self.spores = {} # stores all shown spores
-        self.info = ColonyGeneralInfo()
-        self.printer = InfoManager(silent_mode=(not verbose))
+        self.width: int = width
+        self.height: int = height
+        self.viewer_width: int = viewer_width
+        self.viewer_height: int = viewer_height
+        self.allow_init_overlapping: bool = True
+        self.enable_history: bool = False
+        self.step: Dict[Tuple[int, int], List[int]] = {}
+        self.id_counter: int = 0
+        self.current_pop: int = 0
+        self.spores: Dict[int, Spore] = {} # stores all shown spores
+        self.info: ColonyGeneralInfo = ColonyGeneralInfo()
+        self.printer: InfoManager = InfoManager(silent_mode=(not verbose))
+        self.current_iteration: int = 0
 
-        self.step_record = [] # a record of each step
+        self.step_record: list = [] # a record of each step  # typing???
 
-        self._initial_locations = [] # will be emptied after init
-        for i in range(init_pop):
-            
+        for i in range(init_pop):            
             if i % 2 == 0:
                 sex = 1
             else:
@@ -74,8 +73,8 @@ class Colony:
         """
         if coor is None:
             # get a fresh pair of coor
-            x = np.random.randint(low=0, high=self.width)
-            y = np.random.randint(low=0, high=self.height)
+            x: int = np.random.randint(low=0, high=self.width)
+            y: int = np.random.randint(low=0, high=self.height)
             
             # roll the coor of spore
             if self.allow_init_overlapping == False:
@@ -86,7 +85,7 @@ class Colony:
             x, y = coor
 
         # create a spore and add it to colony tracker dict
-        s = Spore(sid=self.id_counter, sex=sex)
+        s: Spore = Spore(sid=self.id_counter, sex=sex)
         # add spore pointer
         self.spores[s.sid] = s
 
@@ -213,5 +212,6 @@ class Colony:
                 self.printer.info(f"A new baby was born, new pop: {self.current_pop}.")
 
         self.step = new_step
+        self.current_iteration += 1
 
         return True
