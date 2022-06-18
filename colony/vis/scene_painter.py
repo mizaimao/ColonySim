@@ -20,7 +20,7 @@ ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
 ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
 ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -40
-ISO_TILE_UPPER_right_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -20
+ISO_TILE_UPPER_RIGHT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -20
 ISO_TILE_OUTLINE_THICKNESS: int = 1
 # ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
 ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210,) * 3
@@ -287,12 +287,17 @@ class ColonyViewIso(ColonyView):
         cv2.fillPoly(frame, pts=[contours], color=color)
 
     @staticmethod
-    def _draw_tile_outlines(frame: np.ndarray, contours: np.ndarray):
-        """Draw four outlines."""
-        cv2.line(frame, contours[0], contours[1], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
-        cv2.line(frame, contours[1], contours[2], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
-        cv2.line(frame, contours[2], contours[3], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
-        cv2.line(frame, contours[3], contours[0], ISO_TILE_OUTLINE_COLOR, ISO_TILE_OUTLINE_THICKNESS)
+    def draw_filled_polygon(
+        frame: np.ndarray,
+        contours: List[np.ndarray],
+        color: Tuple[int, ...],
+        outline_color: Tuple[int, ...] = None,
+        outline_thickness: int = ISO_TILE_OUTLINE_THICKNESS):
+        """Draw a polygon with color, as well as outline if supplied.
+        Basically just combined two opencv functions."""
+        cv2.fillPoly(frame, pts=[contours], color=color)
+        if outline_color is not None:
+            cv2.polylines(frame, pts=[contours], isClosed=True, color=outline_color, thickness=outline_thickness)
 
     def paint_large_pixel(
         self,
@@ -329,55 +334,49 @@ class ColonyViewIso(ColonyView):
             shifter = (0, upper_depth_shifter_half)
             half_shifter = (0, 0)
 
-        # surface of a tile ??? why a positive number causing it shift below ???
+        # draw surface of a tile      ??? why a positive number causing it shift below ???
         contours: np.ndarray = np.array([ul, ll, lr, ur]) - shifter
-        cv2.fillPoly(frame, pts=[contours], color=color)
-        if outline:
-            self._draw_tile_outlines(frame, contours)
+        self.draw_filled_polygon(frame, contours, color, ISO_TILE_OUTLINE_COLOR)
 
-        # elevated left side
+        # draw elevated left side
         if (not background) or (x == 0):
             contours = np.array([ul, ll, ll, ul]) - [shifter, shifter, half_shifter, half_shifter]
-            cv2.fillPoly(
+            self.draw_filled_polygon(
                 frame,
-                pts=[contours],
-                color=shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                contours,
+                shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                ISO_TILE_OUTLINE_COLOR,
             )
-            if outline:
-                self._draw_tile_outlines(frame, contours)
 
-        # elevated right side
+        # draw elevated right side
         if (not background) or (y == self.height - 1):
             contours = np.array([ll, lr, lr, ll]) - [shifter, shifter, half_shifter, half_shifter]
-            cv2.fillPoly(
+            self.draw_filled_polygon(
                 frame,
-                pts=[contours],
-                color=shift_color(color, ISO_TILE_UPPER_right_COLOR_SHIFT),
+                contours,
+                shift_color(color, ISO_TILE_UPPER_RIGHT_COLOR_SHIFT),
+                ISO_TILE_OUTLINE_COLOR,
             )
-            if outline:
-                self._draw_tile_outlines(frame, contours)
 
-        # underground left side
+        # draw underground left side
         if background and (x == 0):
             contours = np.array([ul, ll, ll, ul]) + [shifter, shifter, half_shifter, half_shifter]
-            cv2.fillPoly(
+            self.draw_filled_polygon(
                 frame,
-                pts=[contours],
-                color=shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                contours,
+                shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                ISO_TILE_OUTLINE_COLOR,
             )
-            if outline:
-                self._draw_tile_outlines(frame, contours)
 
-        # underground right side
+        # draw underground right side
         if background and (y == self.height - 1):
             contours = np.array([ll, lr, lr, ll]) + [shifter, shifter, half_shifter, half_shifter]
-            cv2.fillPoly(
+            self.draw_filled_polygon(
                 frame,
-                pts=[contours],
-                color=shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
+                contours,
+                shift_color(DIRT_COLOR, ISO_TILE_UPPER_RIGHT_COLOR_SHIFT),
+                ISO_TILE_OUTLINE_COLOR,
             )
-            if outline:
-                self._draw_tile_outlines(frame, contours)
 
     def paint_image_as_large_pixel(
         self,
