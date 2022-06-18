@@ -260,9 +260,14 @@ class ColonyViewIso(ColonyView):
         # the loop order need to be modifed
         for y in range(len(self.bitmap)):
             for x in range(len(self.bitmap[0]) - 1, 0 - 1, -1):
-                color = map_ref[self.bitmap[y][x]][-1]
-                self.paint_large_pixel(self.static_frame, y, x, color, background=True)
-        return
+                tile_painting_style: Union[str, Tuple[int, int, int]] = map_ref[self.bitmap[y][x]][-1]
+                if isinstance(tile_painting_style, tuple):  # it's a color, then draw tile using this color
+                    self.paint_large_pixel(self.static_frame, x, y, tile_painting_style, background=True)
+                elif isinstance(tile_painting_style, str):
+                    pass  # to be implemented
+                else:
+                    raise ValueError(f"Wrong type of drawing type: {type(tile_painting_style)}, \
+                        check map_generator config file.")
 
     @staticmethod
     def _add_alpha_if_necessary(image: np.ndarray):
