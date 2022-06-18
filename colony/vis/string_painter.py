@@ -1,5 +1,5 @@
 """String painting class for adding strings to np arrays."""
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union, Sequence
 import cv2
 import numpy as np
 
@@ -15,6 +15,8 @@ INFO_FONT: int = cv2.FONT_HERSHEY_SIMPLEX
 INFO_COLOR: Tuple[int, ...] = (100, 100, 100, 0)
 INFO_THICKNESS: int = 1
 INFO_DECAY: int = 20
+
+INFO_PANE_COLOR: int = 220
 
 
 class StringPainter:
@@ -204,3 +206,22 @@ def add_info_to_main_pane(
     painter.paint_lines_decaying(frame, line_lists[::-1],line_count_override=max_rows)
 
     return painter
+
+
+class InfoPanePainter:
+    def __init__(self, width: int, height: int, background: Union[int, Tuple[int, ...]] = INFO_PANE_COLOR):
+        self.width: int = width
+        self.height: int = height
+        self.background: Tuple[int, ...] = background
+        self.string_painter: StringPainter = StringPainter()
+
+        if isinstance(background, int):
+            self.channel: int = 3
+        elif isinstance(background, Sequence):
+            self.channel = len(background)
+        assert self.channel == 3 or self.channel == 4, "Background should be of 3 or 4 channels."
+
+    def paint_lines(self, lines: List[str]):
+        frame: np.ndarray = np.full((self.height, self.width, self.channel), self.background, dtype=np.uint8)
+        self.string_painter.paint_lines(frame=frame, lines=lines)
+        return frame

@@ -7,7 +7,7 @@ from colony.vis.curve_painter import CurvePainter
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 
 from colony.vis.main_scene_painter import MainScenePainter
-from colony.vis.string_painter import StringPainter, add_info_to_main_pane
+from colony.vis.string_painter import StringPainter, InfoPanePainter, add_info_to_main_pane
 
 
 class StepVisulizer:
@@ -27,14 +27,14 @@ class StepVisulizer:
         """
 
         self.colony: Colony = colony
-        self.frame_height: int = colony.viewer_height
-        self.frame_width: int = colony.viewer_width
+        frame_height: int = colony.viewer_height
+        frame_width: int = colony.viewer_width
         self.bitmap: np.ndarray = map_cfg.bitmap
 
         # setup pane sizes
-        self.info_pane_height: int = int(self.frame_height * 0.2)  # shared by two lower panes
-        self.left_info_pane_width: int = int(self.frame_width / 2)
-        self.right_info_pane_width: int = self.frame_width - self.left_info_pane_width
+        info_pane_height: int = int(frame_height * 0.2)  # shared by two lower panes
+        left_info_pane_width: int = int(frame_width / 2)
+        right_info_pane_width: int = frame_width - left_info_pane_width
 
         painter_style: str = "isometric"
         #painter_style = "2D"
@@ -44,14 +44,17 @@ class StepVisulizer:
             painter_style,
             self.colony,
             self.bitmap,
-            self.frame_width,
-            self.frame_height)
+            frame_width,
+            frame_height)
          # colony info painter (lower left pane)
-        self.string_painter: StringPainter = StringPainter()
+        self.info_pane_painter: InfoPanePainter = InfoPanePainter(
+            width=left_info_pane_width,
+            height=info_pane_height
+            )
         # colony debugging info painter (overlays upper pane)
         self.main_view_string_painter: StringPainter = None
         # pop curve painter
-        self.curve_painter = CurvePainter(self.right_info_pane_width, self.info_pane_height)
+        self.curve_painter = CurvePainter(right_info_pane_width, info_pane_height)
 
     def paint_main_viewer(self, with_info: bool = False) -> np.ndarray:
         """Paint the colony main viewer, i.e. the dots and playground.
@@ -65,15 +68,10 @@ class StepVisulizer:
     def paint_info_pane(self, cycle: int) -> np.ndarray:
         """Paint infomation pane, containing items like cycle count and population.
         """
-        left_info: np.ndarray = np.full(
-            (self.info_pane_height, self.left_info_pane_width, 3), 220, dtype=np.uint8
-        )
-        # build text info
         colony_size_info = "Colony Size: {}".format(self.colony.current_pop)
         colony_cycle_info = "Cycle: {}".format(cycle)
-        # add text info to pane
-        self.string_painter.paint_lines(left_info, [colony_size_info, colony_cycle_info])
-
+        # # add text info to pane
+        left_info = self.info_pane_painter.paint_lines([colony_size_info, colony_cycle_info])
         return left_info
 
     def plot_step(self, cycle: int = -1):
@@ -98,6 +96,7 @@ class StepVisulizer:
         # right plot pane, making the curve plot
         curve_pane: np.ndarray = self.curve_painter.draw_colony_curves(self.colony)
 
-        # put two panes together
+        # put lower two panes together
         below_addon = np.concatenate([info_pane, curve_pane], axis=1)
+        # return concatenated uppwer and lower panes
         return np.concatenate([viewer_pane, below_addon], axis=0)
