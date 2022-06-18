@@ -263,8 +263,9 @@ class ColonyViewIso(ColonyView):
                 tile_painting_style: Union[str, Tuple[int, int, int]] = map_ref[self.bitmap[y][x]][-1]
                 if isinstance(tile_painting_style, tuple):  # it's a color, then draw tile using this color
                     self.paint_large_pixel(self.static_frame, x, y, tile_painting_style, background=True)
-                elif isinstance(tile_painting_style, str):
-                    pass  # to be implemented
+                # elif isinstance(tile_painting_style, str):  
+                # NOTE: there should be an offset to match tile offset when tile-drawing are not from images
+                #     pass  # to be implemented
                 else:
                     raise ValueError(f"Wrong type of drawing type: {type(tile_painting_style)}, \
                         check map_generator config file.")

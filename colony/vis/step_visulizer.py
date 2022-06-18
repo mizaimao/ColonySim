@@ -6,7 +6,7 @@ from colony.configs.map_generator.ref import map_ref
 from colony.characters.colony import Colony
 from colony.vis.population_plotter import PopulationCurve
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
-from colony.vis.scene_painter import ColonyView, ColonyView2D, ColonyViewIso
+from colony.vis.colony_viewers import ColonyView, ColonyView2D, ColonyViewIso
 from colony.vis.string_painter import StringPainter, add_info_to_main_pane
 
 painters: Dict[str, ColonyView] = {
