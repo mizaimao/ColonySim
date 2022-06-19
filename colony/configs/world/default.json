@@ -2,7 +2,7 @@
     "setting_id": "Colony Sim Default", 
     "width": 40, 
     "height": 40,
-    "viewer_width": 1440, 
-    "viewer_height": 900, 
+    "viewer_width": 1920, 
+    "viewer_height": 1080, 
     "initial_population": 200
 }

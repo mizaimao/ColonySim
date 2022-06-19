@@ -41,8 +41,8 @@ class CurvePainter:
         """
         self.width: int = width
         self.height: int = height
-        self.plottable_height: int = int(self.height * 0.90)
-        self.line_spacing: int = int(self.width / DATA_POINT_LIMIT)
+        self.plottable_height: float = self.height * 0.95
+        self.line_spacing: float = self.width / (DATA_POINT_LIMIT - 1)
 
         self.population_tracker: StatTracker = StatTracker(color=POP_CURVE_COLOR)
 
@@ -67,13 +67,15 @@ class CurvePainter:
         tracker.prev_high = max(tracker.prev_high, point)
 
         line_dots: List[Tuple[int, int]] = []
+        print(len(tracker.data), self.line_spacing)
         for ri, value in enumerate(
             tracker.data[::-1]
         ):  # acquire position of each data point
             line_dots.append(
                 (
-                    self.width - self.line_spacing * ri - 1,
-                    self.plottable_height - self.normalized_height(value, tracker),
+                    self.width - int(self.line_spacing * ri),
+                    #self.plottable_height - self.normalized_height(value, tracker),
+                    self.height - self.normalized_height(value, tracker)
                 )
             )
         # draw polyline (in-place mutation)
@@ -92,7 +94,7 @@ class CurvePainter:
 
         # build a blank array to draw curves on
         frame = np.full((self.height, self.width, 3), POP_PANE_COLOR, dtype=np.uint8)
-
+        print(frame.shape)
         # add curves
         self.plot_curve_with_updated_point(
             frame, point=population, tracker=self.population_tracker

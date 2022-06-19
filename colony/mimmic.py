@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-from dataclasses import dataclass
-import json
-import cv2
-import sys
 import os
+import sys
 import tqdm
+
+import cv2
 
 from colony.characters.colony import Colony
 from colony.vis.step_visulizer import StepVisulizer
 from colony.configuration import world_cfg
 
 
-target_folder = "/Users/frank/Projects/ColonySim/frames"
-target_frame = 24 * 80
+target_folder: str = "/Users/frank/Projects/ColonySim/frames"
+target_frame: int = 24 * 80
 
 # auto progression frames per second
-auto_fps = 5
+auto_speed: int = 10
+FAST_FORWARD: int = 0
 
 
 WINDOW_NAME = str(world_cfg.setting_id)
@@ -53,6 +53,11 @@ if __name__ == '__main__':
     cycle_counter = -1
     single_frame = visualizer.plot_step() # returns an np.array
 
+    if FAST_FORWARD > 0:
+        print(f"Fast forwarding to iteration {FAST_FORWARD}")
+        for _ in tqdm.tqdm(range(FAST_FORWARD)):
+            chicken_col.progress_a_step()
+
     # manual progression by pressing a key
     if mode == "interactive":        
         k = ord('n')
@@ -87,7 +92,7 @@ if __name__ == '__main__':
 
     # auto progression
     elif mode == "autoplay":
-        interval = int(1 / auto_fps * 1000)
+        interval = int(1 / auto_speed * 1000)
         while True:
             cycle_counter += 1
             
