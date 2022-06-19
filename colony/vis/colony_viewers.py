@@ -1,13 +1,13 @@
 """Painter functions to draw 2D or isometric views of upper panel.
 """
-from abc import ABC, abstractmethod
-from typing import Callable, List, Tuple, Union
+from typing import List, Tuple, Union
 import cv2
 import numpy as np
 from math import sqrt
 
 from colony.configs.map_generator.ref import map_ref
 from colony.utils.color_helpers import shift_color
+from colony.vis.colony_viewers_basic import ColonyView, STAGE_BACKGROUND
 
 
 # artifacial upper and lower blanks
@@ -26,96 +26,6 @@ ISO_TILE_OUTLINE_THICKNESS: int = 1
 ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210,) * 3
 
 DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
-
-# no alpha channel
-STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (202, 193, 103)  # color for stage level background
-
-
-class ColonyView(ABC):
-    """Upper viewing panel drawer."""
-
-    def __init__(
-        self, width: int, height: int, frame_width: int, frame_height: int, bitmap
-    ):
-        self.width: int = width
-        self.height: int = height
-        self.frame_height: int = frame_height
-        self.frame_width: int = frame_width
-        self.bitmap = bitmap
-        self.multiplier: float = None
-        self.static_frame: np.ndarray = None
-
-    @abstractmethod
-    def get_static_frame(self):
-        """Paint the starge background, and calclulate variables needed for playground.
-        Stage background is the back-most layer, and playground is the space where each dot moves around.
-        """
-        pass
-
-    @abstractmethod
-    def paint_playground(self):
-        """Paint playground."""
-        pass
-
-    @abstractmethod
-    def paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
-        """Add individual large "pixels" onto scene/playground."""
-        pass
-
-
-class ColonyView2D(ColonyView):
-    def __init__(
-        self, width: int, height: int, frame_width: int, frame_height: int, bitmap
-    ):
-        super().__init__(width, height, frame_width, frame_height, bitmap)
-
-        # if colony shape is different from viewer shape, some spaces must be padded.
-        self.left_blank: int = 0  # blank space on leftside
-        self.top_blank: int = 0  # blank space on top
-
-        # because we now separated viwer shape and colony shape, there should be a value we use to map colony dots to
-        # viewer.
-        self._figure_out_multiplier()
-
-    def _figure_out_multiplier(self):
-        """To figure out a scalar that we can use to map individual dots to playground by giving them a size."""
-        multiplier_x: float = self.frame_width / self.width
-        multiplier_y: float = self.frame_height / self.height
-        self.multiplier = min(multiplier_x, multiplier_y)
-
-        # in 2D viewer, either X or Y is fully extended, so we only need only blak
-        blank: int = int(abs(self.frame_width - self.frame_height) / 2)
-
-        if multiplier_x > multiplier_y:
-            self.left_blank = blank
-        else:
-            self.top_blank = blank
-
-    def get_static_frame(self):
-        """Paint the background."""
-        if not self.static_frame:
-            self.static_frame = np.full(
-                (self.frame_height, self.frame_width, 3),
-                STAGE_BACKGROUND,
-                dtype=np.uint8,
-            )
-        return self.static_frame
-
-    def paint_playground(self):
-        """Paint playground."""
-        for y in range(len(self.bitmap)):
-            for x in range(len(self.bitmap[0])):
-                color = map_ref[self.bitmap[y][x]][-1]
-                self.paint_large_pixel(self.static_frame, y, x, color)
-
-    def paint_large_pixel(self, frame: np.ndarray, x: int, y: int, color: Tuple):
-        """Paint a big pixel element on the given frame."""
-        x_start = int(x * self.multiplier) + self.left_blank
-        x_end = int((x + 1) * self.multiplier) + self.left_blank
-        y_start = int(y * self.multiplier) + self.top_blank
-        y_end = int((y + 1) * self.multiplier) + self.top_blank
-
-        frame[y_start:y_end, x_start:x_end] = color
 
 
 class ColonyViewIso(ColonyView):
@@ -270,20 +180,6 @@ class ColonyViewIso(ColonyView):
                     raise ValueError(f"Wrong type of drawing type: {type(tile_painting_style)}, \
                         check map_generator config file.")
 
-    @staticmethod
-    def _add_alpha_if_necessary(image: np.ndarray):
-        """Add one alpha channel (value==255) if necessary."""
-        if image.shape[-1] == 3:  # three-channel image
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)  # it's BGR but whatever
-        return image
-
-    @staticmethod
-    def _resize_image_by_width(image: np.ndarray, width: int):
-        """Resize image with width while retaining aspect ratio."""
-        org_w, org_h, _ = image.shape
-        org_ratio: float = org_h / org_w
-        return cv2.resize(image, (width, int(width * org_ratio)))
-
     def paint_large_pixel_plane(self, frame: np.ndarray, x: int, y: int, color: Tuple):
         """Draw mega pixel without depth info, just overlay them on a plane"""
         # the function adds blanks automatically
@@ -383,6 +279,29 @@ class ColonyViewIso(ColonyView):
                 shift_color(DIRT_COLOR, ISO_TILE_UPPER_RIGHT_COLOR_SHIFT),
                 ISO_TILE_OUTLINE_COLOR,
             )
+
+class ColonyViewIsoImage(ColonyViewIso):
+    """Extends the basic isometric viewer to support image overlaying.
+    """
+    def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap):
+        """New attributes would be 
+        """
+
+        super().__init__(width, height, frame_width, frame_height, bitmap)
+
+    @staticmethod
+    def _add_alpha_if_necessary(image: np.ndarray):
+        """Add one alpha channel (value==255) if necessary."""
+        if image.shape[-1] == 3:  # three-channel image
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)  # it's BGR but whatever
+        return image
+
+    @staticmethod
+    def _resize_image_by_width(image: np.ndarray, width: int):
+        """Resize image with width while retaining aspect ratio."""
+        org_w, org_h, _ = image.shape
+        org_ratio: float = org_h / org_w
+        return cv2.resize(image, (width, int(width * org_ratio)))
 
     def paint_image_as_large_pixel(
         self,

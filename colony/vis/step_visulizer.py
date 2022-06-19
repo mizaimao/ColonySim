@@ -32,7 +32,8 @@ class StepVisulizer:
         left_info_pane_width: int = int(frame_width / 2)
         right_info_pane_width: int = frame_width - left_info_pane_width
 
-        painter_style: str = "isometric"
+        painter_style: str = "isometric_image"
+        #painter_style: str = "isometric"
         #painter_style = "2D"
 
         # setup painters (three panes)

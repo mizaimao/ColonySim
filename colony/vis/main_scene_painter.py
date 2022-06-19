@@ -4,7 +4,8 @@ import numpy as np
 from typing import Callable, Dict, List, Tuple, Union
 
 from colony.characters.colony import Colony
-from colony.vis.colony_viewers import ColonyView, ColonyView2D, ColonyViewIso
+from colony.vis.colony_viewers_basic import ColonyView, ColonyView2D
+from colony.vis.colony_viewers import ColonyViewIso, ColonyViewIsoImage
 
 # color of players in BGR
 color_dict: Dict[int, Tuple[int, ...]] = {1: (245, 158, 66), 3: (95, 95, 250)}
@@ -12,6 +13,7 @@ color_dict: Dict[int, Tuple[int, ...]] = {1: (245, 158, 66), 3: (95, 95, 250)}
 available_painters: Dict[str, ColonyView] = {
     "2D": ColonyView2D,
     "isometric": ColonyViewIso,
+    "isometric_image": ColonyViewIsoImage
 }
 
 class MainScenePainter:
@@ -40,6 +42,6 @@ class MainScenePainter:
             top_spore = self.colony.spores[spores[0]]
             # dye this block
             splore_color = color_dict[top_spore.sex]
-            self.painter.paint_large_pixel(frame, x, y, splore_color)
+            self.painter.paint_large_pixel(frame, x, y, splore_color, outline=False)
 
         return frame
