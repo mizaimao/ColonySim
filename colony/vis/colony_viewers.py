@@ -1,12 +1,13 @@
 """Painter functions to draw 2D or isometric views of upper panel.
 """
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 import cv2
 import numpy as np
 from math import sqrt
 
 from colony.configs.map_generator.ref import map_ref
 from colony.utils.color_helpers import shift_color
+from colony.utils.image_manager import ImageManager
 from colony.vis.colony_viewers_basic import ColonyView, STAGE_BACKGROUND
 
 
@@ -22,7 +23,6 @@ ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
 ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -40
 ISO_TILE_UPPER_RIGHT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -20
 ISO_TILE_OUTLINE_THICKNESS: int = 1
-# ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (150, 150, 150)
 ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210,) * 3
 
 DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
@@ -280,12 +280,14 @@ class ColonyViewIso(ColonyView):
                 ISO_TILE_OUTLINE_COLOR,
             )
 
+
 class ColonyViewIsoImage(ColonyViewIso):
     """Extends the basic isometric viewer to support image overlaying.
     """
     def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap):
-        """New attributes would be 
+        """New attributes would be cached images or values will that will be repetitively calculated.
         """
+        self.imager: ImageManager = ImageManager()
 
         super().__init__(width, height, frame_width, frame_height, bitmap)
 
