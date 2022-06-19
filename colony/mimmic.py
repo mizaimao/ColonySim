@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     mode = 'interactive'
     #mode = 'dump'
-    #mode = 'autoplay'
+    mode = 'autoplay'
 
     # create a colony
     chicken_col = Colony(

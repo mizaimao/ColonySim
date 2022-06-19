@@ -8,7 +8,7 @@ from colony.characters.colony import Colony
 
 
 # common settings
-POP_PANE_COLOR: Union[int, Tuple[int, ...]] = 220
+POP_PANE_COLOR: Union[int, Tuple[int, ...]] = 230
 UNASSIGNED_CURVE_COLOR: Tuple[int, ...] = (255, 255, 255)
 CURVE_THICKNESS: int = 1
 THICK_CURVE_THICKNESS: int = 2
