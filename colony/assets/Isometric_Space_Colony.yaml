@@ -1,0 +1,22 @@
+name: space
+asset_root: "Isometric Space Colony"
+structure:
+  power: Props/LunarLandscape_Exports_001-41-SolarPanel-2.png
+  habitat: Buildings/LunarLandscape_Exports_001-1-Building-4.png
+  refinary: Buildings/LunarLandscape_Exports_001-5-Building.png
+  printer: Buildings/LunarLandscape_Exports_001-4-Building-1.png
+  farm: Buildings/LunarLandscape_Exports_001-2-Building-3.png
+  research: Buildings/LunarLandscape_Exports_001-0-Building-5.png
+  storage: Buildings/LunarLandscape_Exports_001-6-LandingPlateform.png
+
+surface:
+  ground:
+    - Environment/LunarLandscape_Exports_001-50-GroundTile.png
+    - Environment/LunarLandscape_Exports_001-0-GroundTile-3.png
+    - Environment/LunarLandscape_Exports_001-3-GroundTile-2.png
+    - Environment/LunarLandscape_Exports_001-15-GroundTile-1.png
+    - Environment/LunarLandscape_Exports_001-16-GroundTile.png
+    - Environment/LunarLandscape_Exports_001-17-GroundTile-6.png
+    - Environment/LunarLandscape_Exports_001-18-GroundTile-5.png
+    - Environment/LunarLandscape_Exports_001-19-GroundTile-4.png
+    - Environment/LunarLandscape_Exports_001-20-GroundTile-3.png
