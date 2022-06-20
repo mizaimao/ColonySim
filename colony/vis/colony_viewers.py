@@ -11,19 +11,22 @@ from colony.utils.image_manager import ImageManager
 from colony.vis.colony_viewers_basic import ColonyView, STAGE_BACKGROUND
 
 
-# artifacial upper and lower blanks
+# left blank spaces of upper and lower frame
 ISO_UPPER: float = 0.05  # ratio to frame height
 ISO_LOWER: float = 0.05
 
-ISO_TILE_THICKNESS_SCALAR: float = 1.0  # raito to mega pixel size (height)
-ISO_TILE_GRID_LINE_THICKNESS: int = 4
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
-ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
+ISO_TILE_UPPER_THICKNESS_SCALAR: float = 0.5  # ratio to tile height
+ISO_TILE_LOWER_THICKNESS_SCALAR: float = 10
+
 ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -40
 ISO_TILE_UPPER_RIGHT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -20
+
+ISO_TILE_GRID_LINE_THICKNESS: int = 4
 ISO_TILE_OUTLINE_THICKNESS: int = 1
 ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210,) * 3
+ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
 
 DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
 
@@ -91,8 +94,8 @@ class ColonyViewIso(ColonyView):
 
         # figure out tile depth above and below surface
         # simple case now, just cut them into halves
-        self.tile_upper_depth = self.tile_height / 2 * ISO_TILE_THICKNESS_SCALAR
-        self.tile_lower_depth = self.tile_height / 2 * ISO_TILE_THICKNESS_SCALAR
+        self.tile_upper_depth = self.tile_height * ISO_TILE_UPPER_THICKNESS_SCALAR
+        self.tile_lower_depth = self.tile_height * ISO_TILE_LOWER_THICKNESS_SCALAR
 
     def _get_iso_coor(self, x: float, y: float):
         """Convert bitmap coordinates to isometric coordinates.
@@ -224,25 +227,28 @@ class ColonyViewIso(ColonyView):
         Tile outline applies only to player/mimic/whatever-individual tiles, not backgrounds tiles.
         Some lines are overlapping. So different sides will have different number of line drawing statements.
         """
-        upper_depth_shifter: int = int(self.tile_upper_depth)
-        upper_depth_shifter_half = int(upper_depth_shifter / 2)
+        upper_shifter: Tuple[int, int] = (0, int(self.tile_upper_depth))
+        half_upper_shifter: Tuple[int, int] = (0, int(self.tile_upper_depth / 2))
+
+        lower_shifter: Tuple[int, int] = (0, int(self.tile_lower_depth))
+        half_lower_shifter: Tuple[int, int] = (0, int(self.tile_lower_depth / 2))
+
+        if background:  # background has shallower depth (half of a tile)
+            upper_shifter = half_upper_shifter
+            half_upper_shifter = (0, 0)
+            lower_shifter = half_lower_shifter
+            half_lower_shifter = (0, 0)
 
         # four original corners of each tile
         ul, ur, ll, lr = self._get_iso_coor_set(x, y)
 
-        shifter: Tuple[int, int] = (0, upper_depth_shifter)
-        half_shifter: Tuple[int, int] = (0, upper_depth_shifter_half)
-        if background:  # background has shallower depth (half of a tile)
-            shifter = (0, upper_depth_shifter_half)
-            half_shifter = (0, 0)
-
         # draw surface of a tile      ??? why a positive number causing it shift below ???
-        contours: np.ndarray = np.array([ul, ll, lr, ur]) - shifter
+        contours: np.ndarray = np.array([ul, ll, lr, ur]) - upper_shifter
         self.draw_filled_polygon(frame, contours, color, ISO_TILE_OUTLINE_COLOR)
 
         # draw elevated left side
         if (not background) or (x == 0):
-            contours = np.array([ul, ll, ll, ul]) - [shifter, shifter, half_shifter, half_shifter]
+            contours = np.array([ul, ll, ll, ul]) - [upper_shifter, upper_shifter, half_upper_shifter, half_upper_shifter]
             self.draw_filled_polygon(
                 frame,
                 contours,
@@ -252,7 +258,7 @@ class ColonyViewIso(ColonyView):
 
         # draw elevated right side
         if (not background) or (y == self.height - 1):
-            contours = np.array([ll, lr, lr, ll]) - [shifter, shifter, half_shifter, half_shifter]
+            contours = np.array([ll, lr, lr, ll]) - [upper_shifter, upper_shifter, half_upper_shifter, half_upper_shifter]
             self.draw_filled_polygon(
                 frame,
                 contours,
@@ -260,9 +266,9 @@ class ColonyViewIso(ColonyView):
                 ISO_TILE_OUTLINE_COLOR,
             )
 
-        # draw underground left side
+        # # draw underground left side
         if background and (x == 0):
-            contours = np.array([ul, ll, ll, ul]) + [shifter, shifter, half_shifter, half_shifter]
+            contours = np.array([ul, ll, ll, ul]) + [lower_shifter, lower_shifter, half_lower_shifter, half_lower_shifter]
             self.draw_filled_polygon(
                 frame,
                 contours,
@@ -272,7 +278,7 @@ class ColonyViewIso(ColonyView):
 
         # draw underground right side
         if background and (y == self.height - 1):
-            contours = np.array([ll, lr, lr, ll]) + [shifter, shifter, half_shifter, half_shifter]
+            contours = np.array([ll, lr, lr, ll]) + [lower_shifter, lower_shifter, half_lower_shifter, half_lower_shifter]
             self.draw_filled_polygon(
                 frame,
                 contours,

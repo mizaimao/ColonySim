@@ -2,15 +2,16 @@
 """
 import os
 import numpy as np
-
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import cv2
 
 asset_path = Path(__file__).parent.joinpath("assets")
 
-
+@dataclass
 class AssetMeta:
+    
     pass
 
 
