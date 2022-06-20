@@ -1,7 +1,0 @@
-{
-    "one_night_chance": 0.5, 
-    "fertility_rate": 1.6, 
-    "duel_fatality": 0.2, 
-    "natural_fatality": 0.02,
-    "crowd_threshold": 2
-}

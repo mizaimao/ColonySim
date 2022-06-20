@@ -1,6 +1,6 @@
 """Holding multiple types of settings for importing.
 """
-import json
+import yaml
 from pathlib import Path
 from dataclasses import dataclass
 from typing import Any
@@ -37,7 +37,7 @@ class SporeSettings:
 
 # objected shared in multiple places
 spore_cfg = SporeSettings(
-    **json.load(open(config_path.joinpath("spore_beheavoir/default.json"), "r"))
+    **yaml.safe_load(open(config_path.joinpath("spore_beheavoir/default.yaml")))
 )
 
 
@@ -53,8 +53,7 @@ class WorldSetup:
     viewer_height: int
 
 
-world_cfg = WorldSetup(**json.load(open(config_path.joinpath("world/default.json"), "r")))
-
+world_cfg = WorldSetup(**yaml.safe_load(open(config_path.joinpath("world/default.yaml"))))
 
 @dataclass
 class MapSetup:
@@ -85,5 +84,5 @@ class MapSetup:
 
 
 map_cfg = MapSetup(
-    json.load(open(config_path.joinpath("map_generator/default.json"), "r")), world_cfg
+    yaml.safe_load(open(config_path.joinpath("map_generator/default.yaml"))), world_cfg
 )

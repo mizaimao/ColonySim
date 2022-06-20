@@ -67,7 +67,6 @@ class CurvePainter:
         tracker.prev_high = max(tracker.prev_high, point)
 
         line_dots: List[Tuple[int, int]] = []
-        print(len(tracker.data), self.line_spacing)
         for ri, value in enumerate(
             tracker.data[::-1]
         ):  # acquire position of each data point
@@ -94,7 +93,7 @@ class CurvePainter:
 
         # build a blank array to draw curves on
         frame = np.full((self.height, self.width, 3), POP_PANE_COLOR, dtype=np.uint8)
-        print(frame.shape)
+        
         # add curves
         self.plot_curve_with_updated_point(
             frame, point=population, tracker=self.population_tracker

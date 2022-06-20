@@ -26,7 +26,7 @@ class GreenMapRules:
 def load_rules(map_type: str):
     """Returns a map rule dataclass object with given map type and config name.
     """
-    all_cfg = yaml.load(open(RULES))
+    all_cfg = yaml.safe_load(open(RULES))
     rules = None
     if map_type == "green":
         cfg = all_cfg["GreenMapRules"]
