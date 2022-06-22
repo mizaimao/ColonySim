@@ -17,8 +17,8 @@ ISO_LOWER: float = 0.05
 
 ISO_TILE_WIDTH_SCALAR: float = sqrt(3)
 ISO_TILE_HEIGHT_SCALAR: float = 1.0
-ISO_TILE_UPPER_THICKNESS_SCALAR: float = 0.5  # ratio to tile height
-ISO_TILE_LOWER_THICKNESS_SCALAR: float = 10
+ISO_TILE_UPPER_THICKNESS_SCALAR: float = .5  # ratio to tile height
+ISO_TILE_LOWER_THICKNESS_SCALAR: float = 2.
 
 ISO_TILE_UPPER_LEFT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -40
 ISO_TILE_UPPER_RIGHT_COLOR_SHIFT: Union[int, Tuple[int, ...]] = -20
