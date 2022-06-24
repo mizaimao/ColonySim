@@ -4,12 +4,31 @@ import os
 import numpy as np
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
 
 
 ASSET_FOLDER = Path(__file__).parent.joinpath("../assets")
+
+
+@dataclass
+class Images:
+    """Small struct holding a list of image arrays and their sizes on bitmap
+    (their origianl dimensions are not saved here)."""
+    images: List[np.ndarray] = field(default_factory=lambda: [])
+    sizes: List[Tuple[int, int]] = field(default_factory=lambda: [])
+    
+    def __len__(self):
+        return len(self.images)
+
+
+@dataclass
+class ImageSet:
+    """Small struct holding an image set of a certain zoom level.
+    Dynamically populated when a new tileset is read from disk.
+    """
+    pass
 
 
 @dataclass
@@ -20,20 +39,29 @@ class ImageLoader:
         asset_root: Relative path to tileset folder.
         structure: files used for game structural-buildings.
         surface: files used as floor tiles.
-        
+        raw_image_set: Points to an ImageSet instance holding raw resolution images.
+
     """
     name: str
     asset_root: Path
     structure: Dict[str, Dict[str, str]]
     surface: Optional[Dict[str, List[Path]]] = field(default_factory=lambda: {})
-        
+    raw_image_set: ImageSet = ImageSet()
+
     def __post_init__(self):
         """Formating and check data correctness."""
         assert self.name, "Make sure name is not empty."
         self.asset_root = Path(self.asset_root)
-        for k, v in self.structure.items():
+        # load and dump raw image arrays to an ImageSet instance
+        for image_name, v in self.structure.items():
             path, sizes = self.unpack_path_size_pair(v)
-            self.load_image_from_disk(asset_path=path, split=len(sizes))
+            images: List[np.ndarray] = self.load_image_from_disk(
+                asset_path=path, split=len(sizes)
+            )
+            # create an Image instance
+            image_instance: Images = Images(images=images, sizes=sizes)
+            # inject it to ImageSet instance
+            self.raw_image_set.__setattr__(image_name, image_instance)
         for k, v in self.surface.items():
             self.surface[k] = [Path(p) for p in v]
         
