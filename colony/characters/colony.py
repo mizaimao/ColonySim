@@ -48,7 +48,7 @@ class Colony:
         self.height: int = height
         self.viewer_width: int = viewer_width
         self.viewer_height: int = viewer_height
-        self.allow_init_overlapping: bool = True
+        self.allow_init_overlapping: bool = False
         self.enable_history: bool = False
 
         # variables
@@ -63,19 +63,26 @@ class Colony:
         self.info: ColonyGeneralInfo = ColonyGeneralInfo()
         self.printer: InfoManager = InfoManager(silent_mode=(not verbose))
         self.storage: ColonyStorage = ColonyStorage(res=res_cfg.starting_res)
+        self.rng = np.random.RandomState(seed)
 
-        for i in range(init_pop):            
-            if i % 2 == 0:
-                sex = 1
-            else:
-                sex = 3
-            if not sex in self.info.gender_counts:
-                self.info.gender_counts[sex] = 0
-            self.info.gender_counts[sex] += 1
+        # create population
+        self._create_init_population(init_pop=init_pop)
 
-            self._create_individual(sex=sex, step_dict=self.step)
+    def _create_init_population(self, init_pop: int):
+        color_0: int = 1
+        color_1: int = 3
 
-        
+        color_0_count: int = int(init_pop / 2)
+        color_1_count: int = init_pop - color_0_count
+
+        self.info.gender_counts[color_0] = color_0_count
+        self.info.gender_counts[color_1] = color_1_count
+
+        for _ in range(color_0_count):
+            self._create_individual(sex=color_0, step_dict=self.step)
+        for _ in range(color_1_count):
+            self._create_individual(sex=color_1, step_dict=self.step)
+
     def _create_individual(self, sex: int, coor: tuple = None, step_dict = None):
         """
         Create a new spore with given sex (required) and coor (optional)
@@ -86,7 +93,7 @@ class Colony:
             y: int = np.random.randint(low=0, high=self.height)
             
             # roll the coor of spore
-            if self.allow_init_overlapping == False:
+            if not self.allow_init_overlapping:
                 while (x, y) in step_dict:
                     x = np.random.randint(low=0, high=self.width)
                     y = np.random.randint(low=0, high=self.height)
@@ -129,7 +136,7 @@ class Colony:
         Progress to the next step.
 
         Returns:
-            bool: if the colony dies
+            bool: if the colony dies.
         """
         # save current step
         if self.enable_history:
@@ -142,79 +149,39 @@ class Colony:
         # processed step placeholder
         new_step = {} 
 
-        # generate spres' next move in a batch
+        # generate next moves of spores in a batch
         next_directions = get_direction(size=self.current_pop)
         
-        spore_counter = 0
-        events = {}
+        spore_counter: int = 0
         
         # process spores by tile
         for coor, spores_in_tile in self.step.items():
-            encounter = False
-            crowd_size = len(spores_in_tile)
-
-            # too crowded, triggering extinct on tile
-            if crowd_size > spore_cfg.crowd_threshold: 
-                self.printer.info(f"A crowd of {crowd_size} dead caused by famine,")
-                for spore_id in spores_in_tile:
-                    del self.spores[spore_id]
-                        
-                self.current_pop -= crowd_size
-                spore_counter += crowd_size
-                continue
-
-            # more than one spre on tile, triggering event
-            if crowd_size > 1:
-                encounter = True 
-
-                # select two spores
-                chosen_ids = np.random.choice(spores_in_tile, size = 2, replace=False)
-                # get result of their encounter
-                event_results = event_handler(self.spores[chosen_ids[0]], self.spores[chosen_ids[1]])
-                survival_dict = {chosen_ids[0]: event_results[0][0],
-                                chosen_ids[1]: event_results[0][1]}
-                # add event record so that it can be processed later
-                # cannot be processed now since it changes dict size
-                events[coor] = (survival_dict, event_results[1])
-
             # process each spore on this tile
             for spore_id in spores_in_tile:
-                if encounter:
-                    try:
-                        survived = survival_dict[spore_id]
-                    except KeyError: # if they are not in survival event, then safe
-                        survived = True
-                    
-                    if not survived: # delete this spore
-                        spore_pointer = self.spores[spore_id]
-                        self.info.gender_counts[spore_pointer.sex] -= 1  # substract its gender counter
-                        del self.spores[spore_id]
-                        self.printer.info("A spore dead in fighting.")
-                        self.current_pop -= 1
-                        spore_counter += 1
-                        continue
                 
-                # safe spores proceeds to this step, so they will mobilize 
-                next_direction = next_directions[spore_counter]
-                new_coor = get_next_coor(next_direction, coor, self.width, self.height)
+                new_coor = get_next_coor(
+                    next_directions[spore_counter],
+                    coor,
+                    self.width,
+                    self.height,
+                    new_step)
 
                 # change tiles according to their movements
-                try:
-                    new_step[new_coor].append(spore_id)
-                except KeyError:
-                    new_step[new_coor] = [spore_id]
+                if new_coor not in new_step:
+                    new_step[new_coor] = []
+                new_step[new_coor].append(spore_id)
 
                 spore_counter += 1
 
-        for coor, (survival_dict, new_born) in events.items():
-            for new_born in range(event_results[1]):
-                sex = 1 if np.random.random() <= 0.5 else 3
-                neary_by_coor = get_next_coor(get_direction(), coor, self.width, self.height)
+        # for coor, (survival_dict, new_born) in events.items():
+        #     for new_born in range(event_results[1]):
+        #         sex = 1 if np.random.random() <= 0.5 else 3
+        #         neary_by_coor = get_next_coor(get_direction(), coor, self.width, self.height)
 
-                self._create_individual(sex=sex,
-                                        coor=neary_by_coor,
-                                        step_dict=new_step)
-                self.printer.info(f"A new baby was born, new pop: {self.current_pop}.")
+        #         self._create_individual(sex=sex,
+        #                                 coor=neary_by_coor,
+        #                                 step_dict=new_step)
+        #         self.printer.info(f"A new baby was born, new pop: {self.current_pop}.")
 
         self.step = new_step
         self.current_iteration += 1
