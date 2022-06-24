@@ -166,9 +166,8 @@ class ColonyViewIso(ColonyView):
 
     def paint_playground(self):
         """Paint the playground."""
-        assert (
-            self.static_frame is not None
-        ), "Call get_static_frame first to paint a static frame."
+        if self.static_frame is None:
+            self.static_frame = self._paint_isometric_static_frame()
 
         # the loop order need to be modifed
         for y in range(len(self.bitmap)):
@@ -290,10 +289,11 @@ class ColonyViewIso(ColonyView):
 class ColonyViewIsoImage(ColonyViewIso):
     """Extends the basic isometric viewer to support image overlaying.
     """
-    def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap):
+    def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap, seed: int = 42):
         """New attributes would be cached images or values will that will be repetitively calculated.
         """
         self.imager: ImageManager = ImageManager()
+        self.rng = np.random.RandomState(seed)
 
         super().__init__(width, height, frame_width, frame_height, bitmap)
 
@@ -310,6 +310,23 @@ class ColonyViewIsoImage(ColonyViewIso):
         org_h, org_w, _ = image.shape
         org_ratio: float = org_h / org_w
         return cv2.resize(image, (width, int(width * org_ratio)))
+
+    def paint_floors(self, tiles: Union[np.ndarray, List[np.ndarray]]) -> np.ndarray:
+        """Paint floors with a given tileset."""
+        background: np.ndarray = self.static_frame.copy()
+        
+        if isinstance(tiles, np.ndarray):
+            tiles = [tiles]
+        indices: List[int] = self.rng.choice(len(tiles), self.bitmap.size)
+        image_index: int = 0
+        
+        for y in range(len(self.bitmap)):
+            for x in range(len(self.bitmap[0]) - 1, 0 - 1, -1):
+                tile_image: np.ndarray = tiles[indices[image_index]]
+                self.paint_image_as_large_pixel(background, x, y, tile_image)
+                image_index += 1
+                
+        return background
 
     def paint_image_as_large_pixel(
         self,
