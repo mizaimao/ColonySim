@@ -84,11 +84,11 @@ class Colony:
         self.info.gender_counts[color_1] = color_1_count
 
         for _ in range(color_0_count):
-            self._create_individual(sex=color_0, step_dict=self.step)
+            self._create_individual(sex=color_0)
         for _ in range(color_1_count):
-            self._create_individual(sex=color_1, step_dict=self.step)
+            self._create_individual(sex=color_1)
 
-    def _create_individual(self, sex: int, coor: tuple = None, step_dict = None):
+    def _create_individual(self, sex: int, coor: tuple = None):
         """
         Create a new spore with given sex (required) and coor (optional)
         """
@@ -99,7 +99,7 @@ class Colony:
             
             # roll the coor of spore
             if not self.allow_init_overlapping:
-                while (x, y) in step_dict:
+                while (x, y) in self.step:
                     x = np.random.randint(low=0, high=self.width)
                     y = np.random.randint(low=0, high=self.height)
         else: 
@@ -116,9 +116,9 @@ class Colony:
 
         # add spore to step
         try:
-            step_dict[(x, y)].append(s.sid)
+            self.step[(x, y)].append(s.sid)
         except KeyError:
-            step_dict[(x, y)] = [s.sid]
+            self.step[(x, y)] = [s.sid]
         self.info.gender_counts[sex] += 1
 
         self.id_counter += 1
@@ -154,7 +154,8 @@ class Colony:
         res[22] += len(self.spores) * RES22_SPEED[self.tech_stage]
         res[23] += len(self.spores) * RES23_SPEED[self.tech_stage]
 
-
+        # variables for other calculations
+        healths: List[float] = []
 
         # process spores by tile
         for coor, spores_in_tile in self.step.items():
@@ -170,12 +171,18 @@ class Colony:
                 # spore ages
                 s.age += 1
 
+                healths.append(s.health)
                 # spore health check
                 if s.health <= 0:
                     self._remove_spore(spore_id)
                     del self.step[coor][spore_inlist_id]
                     if (self.step[coor]) == 0:
                         del self.step[coor]
+
+        # calculate happiness
+        expansion_ready: bool = self.happiness.update(healths)
+        if expansion_ready and self.current_pop < self.pop_cap:
+            self._create_individual(sex=self.rng.choice(list(sex_mapper.keys())))
 
 
     def progress_a_step(self):
