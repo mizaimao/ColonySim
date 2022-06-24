@@ -294,12 +294,20 @@ class ColonyViewIsoImage(ColonyViewIso):
     def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap, seed: int = 720):
         """New attributes would be cached images or values will that will be repetitively calculated.
         """
+        super().__init__(width, height, frame_width, frame_height, bitmap)
+
         self.imager: ImageManager = ImageManager(
             set_name=DEFAULT_TILE_SET,
-            seed=seed)
+            seed=seed,
+            tile_width=self.get_tile_width())
         self.rng = np.random.RandomState(seed)
 
-        super().__init__(width, height, frame_width, frame_height, bitmap)
+        
+    def get_tile_width(self):
+        """Get tile width in terms of pixel count on screen."""
+        ul, ur, ll, lr = self._get_iso_coor_set(0, 0)
+        return abs(ul[0] - lr[0])
+
 
     @staticmethod
     def _add_alpha_if_necessary(image: np.ndarray):
