@@ -1,11 +1,12 @@
 """Detailed map generation rules.
 """
-from dataclasses import dataclass
 import yaml
+from pathlib import Path
+from dataclasses import dataclass
 from typing import Dict, Tuple
 
-
-RULES = "configs/map_generator/rules.yaml"
+config_path = Path(__file__).parent
+RULES = config_path.joinpath("rules.yaml")
 
 @dataclass
 class GreenMapRules:
@@ -25,7 +26,7 @@ class GreenMapRules:
 def load_rules(map_type: str):
     """Returns a map rule dataclass object with given map type and config name.
     """
-    all_cfg = yaml.load(open(RULES))
+    all_cfg = yaml.safe_load(open(RULES))
     rules = None
     if map_type == "green":
         cfg = all_cfg["GreenMapRules"]

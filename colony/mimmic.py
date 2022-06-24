@@ -1,21 +1,21 @@
 #!/usr/bin/env python3
-from dataclasses import dataclass
-import json
-import cv2
-import sys
 import os
+import sys
 import tqdm
 
-from colony import Colony
-from step_visulizer import *
-from configuration import world_cfg
+import cv2
+
+from colony.characters.colony import Colony
+from colony.vis.step_visulizer import StepVisulizer
+from colony.configuration import world_cfg
 
 
-target_folder = "/Users/frank/Projects/ColonySim/frames"
-target_frame = 24 * 80
+target_folder: str = "/Users/frank/Projects/ColonySim/frames"
+target_frame: int = 24 * 80
 
 # auto progression frames per second
-auto_fps = 5
+auto_speed: int = 10
+FAST_FORWARD: int = 0
 
 
 WINDOW_NAME = str(world_cfg.setting_id)
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     mode = 'interactive'
     #mode = 'dump'
-    #mode = 'autoplay'
+    mode = 'autoplay'
 
     # create a colony
     chicken_col = Colony(
@@ -45,12 +45,18 @@ if __name__ == '__main__':
         viewer_width=VX,
         viewer_height=VY,
         init_pop=INIT_POP,
-        seed=0)
+        seed=0,
+        verbose=(mode!='dump'))
     # plotting object
     visualizer = StepVisulizer(colony=chicken_col)
     
     cycle_counter = -1
-    single_frame = visualizer.plot_step(cycle=cycle_counter) # returns an np.array
+    single_frame = visualizer.plot_step() # returns an np.array
+
+    if FAST_FORWARD > 0:
+        print(f"Fast forwarding to iteration {FAST_FORWARD}")
+        for _ in tqdm.tqdm(range(FAST_FORWARD)):
+            chicken_col.progress_a_step()
 
     # manual progression by pressing a key
     if mode == "interactive":        
@@ -59,8 +65,9 @@ if __name__ == '__main__':
             cycle_counter += 1
             
             colony_survived: bool = chicken_col.progress_a_step()
-            single_frame = visualizer.plot_step(cycle=cycle_counter)
-            cv2.imshow(WINDOW_NAME, single_frame) 
+            chicken_col.printer.print_info()
+            single_frame = visualizer.plot_step()
+            cv2.imshow(WINDOW_NAME, single_frame)
             k = cv2.waitKey(0)
             if not colony_survived:
                 break
@@ -72,11 +79,11 @@ if __name__ == '__main__':
         for frame in tqdm.tqdm(range(target_frame)):
             cycle_counter += 1        
             colony_survived = chicken_col.progress_a_step()
-            single_frame = visualizer.plot_step(cycle=cycle_counter)
+            chicken_col.printer.print_info()
+            single_frame = visualizer.plot_step()
 
             out_name = os.path.join(target_folder, '%05d.png' % frame)
             cv2.imwrite(out_name, single_frame)
-
             if not colony_survived:
                 break
         print("Frames generated, converting it to video...")
@@ -85,13 +92,14 @@ if __name__ == '__main__':
 
     # auto progression
     elif mode == "autoplay":
-        interval = int(1 / auto_fps * 1000)
+        interval = int(1 / auto_speed * 1000)
         while True:
             cycle_counter += 1
             
             colony_survived = chicken_col.progress_a_step()
-            single_frame = visualizer.plot_step(cycle=cycle_counter)
-            cv2.imshow(WINDOW_NAME, single_frame) 
+            chicken_col.printer.print_info()
+            single_frame = visualizer.plot_step()
+            cv2.imshow(WINDOW_NAME, single_frame)
             key = cv2.waitKey(interval)  # this one controlls time interval
             if key > 0:
                 cv2.destroyAllWindows()
