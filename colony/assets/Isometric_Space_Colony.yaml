@@ -3,15 +3,29 @@ mrr: cat
 name: space
 asset_root: "Isometric Space Colony"
 structure:
-  power: Props/LunarLandscape_Exports_001-41-SolarPanel-2.png
-  habitat: Buildings/LunarLandscape_Exports_001-1-Building-4.png
-  refinary: Buildings/LunarLandscape_Exports_001-5-Building.png
-  printer: Buildings/LunarLandscape_Exports_001-4-Building-1.png
-  farm: Buildings/LunarLandscape_Exports_001-2-Building-3.png
-  research: Buildings/LunarLandscape_Exports_001-0-Building-5.png
-  storage: Buildings/LunarLandscape_Exports_001-6-LandingPlateform.png
+  power:
+    path: /Users/frank/Downloads/Exports/Props/LunarLandscape_Exports_001-48-SolarPanel-1.png
+    sizes: "21, 12, 21, 12"
+  habitat:
+    path: Buildings/LunarLandscape_Exports_001-1-Building-4.png
+    sizes: "11, 11, 11, 11"
+  refinary:
+    path: Buildings/LunarLandscape_Exports_001-5-Building.png
+    sizes: "21, 12, 21, 12"
+  printer:
+    path: Buildings/LunarLandscape_Exports_001-4-Building-1.png
+    sizes: "21, 12, 21, 12"
+  farm:
+    path: Buildings/LunarLandscape_Exports_001-2-Building-3.png
+    sizes: "21, 12, 21, 12"
+  research:
+    path: Buildings/LunarLandscape_Exports_001-0-Building-5.png
+    sizes: "13, 31, 13, 31"
+  storage:
+    path: Buildings/LunarLandscape_Exports_001-6-LandingPlateform.png
+    sizes: "22, 22, 22, 22"
 
-surface:
+surface:  # not used for now
   ground:
     - Environment/LunarLandscape_Exports_001-50-GroundTile.png
     - Environment/LunarLandscape_Exports_001-0-GroundTile-3.png
