@@ -93,4 +93,5 @@ class ImageLoader:
         return image[tuple([slice(*s) for s in slices])]
 
     def get_imageset(self):
+        """Retrive processed raw image set."""
         return self.raw_image_set

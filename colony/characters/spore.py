@@ -1,4 +1,8 @@
+from dataclasses import dataclass
+
+@dataclass
 class Spore:
-    def __init__(self, sid: int, sex: int):
-        self.sid = sid
-        self.sex = sex
+    sid: int
+    sex: int
+    age: int
+    health: int

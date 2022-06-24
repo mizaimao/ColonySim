@@ -2,7 +2,7 @@
 """
 import yaml
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from colony.generators.map_generator import GreenMapGenerator
@@ -85,4 +85,14 @@ class MapSetup:
 
 map_cfg = MapSetup(
     yaml.safe_load(open(config_path.joinpath("map_generator/default.yaml"))), world_cfg
+)
+
+@dataclass
+class ResSetup:
+    """Resource settings"""
+    starting_res: dict[int, int] = field(default_factory=lambda: {})
+
+
+res_cfg = ResSetup(
+    **yaml.safe_load(open(config_path.joinpath("resource/default.yaml")))
 )

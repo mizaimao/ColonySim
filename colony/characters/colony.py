@@ -3,17 +3,20 @@ from dataclasses import dataclass, field
 from typing import Dict, Tuple, List
 
 from colony.characters.spore import Spore
+from colony.characters.storage import ColonyStorage
 from colony.progression.step import *
-from colony.configuration import spore_cfg
+from colony.configuration import spore_cfg, res_cfg, ResSetup
 from colony.utils.info_manager import InfoManager
 
 
-sex_mapper = {1: "A", 2: "a", 3: "B", 4: "b"}
+sex_mapper = {1: "A", 3: "B"}
+INITAL_HEALTH: int = 100
 
 
 @dataclass
 class ColonyGeneralInfo:
     gender_counts: Dict[int, int] = field(default_factory=dict)
+
 
 
 class Colony:
@@ -28,6 +31,7 @@ class Colony:
                 viewer_width: int = 1440,
                 viewer_height: int = 900,
                 init_pop: int = 10,
+                res_cfg: ResSetup = res_cfg,
                 seed: int = 0,
                 verbose: bool = True):
         """
@@ -39,21 +43,26 @@ class Colony:
             enable_history {bool}: record each step colony takes.
             
         """
+        # settings
         self.width: int = width
         self.height: int = height
         self.viewer_width: int = viewer_width
         self.viewer_height: int = viewer_height
         self.allow_init_overlapping: bool = True
         self.enable_history: bool = False
+
+        # variables
         self.step: Dict[Tuple[int, int], List[int]] = {}
         self.id_counter: int = 0
         self.current_pop: int = 0
+        self.current_iteration: int = 0
+        self.step_record: list = [] # a record of each step  # typing???
+
+        # pointers
         self.spores: Dict[int, Spore] = {} # stores all shown spores
         self.info: ColonyGeneralInfo = ColonyGeneralInfo()
         self.printer: InfoManager = InfoManager(silent_mode=(not verbose))
-        self.current_iteration: int = 0
-
-        self.step_record: list = [] # a record of each step  # typing???
+        self.storage: ColonyStorage = ColonyStorage(res=res_cfg.starting_res)
 
         for i in range(init_pop):            
             if i % 2 == 0:
@@ -85,7 +94,11 @@ class Colony:
             x, y = coor
 
         # create a spore and add it to colony tracker dict
-        s: Spore = Spore(sid=self.id_counter, sex=sex)
+        s: Spore = Spore(
+            sid=self.id_counter,
+            sex=sex,
+            age=0,
+            health=INITAL_HEALTH)
         # add spore pointer
         self.spores[s.sid] = s
 
@@ -100,28 +113,20 @@ class Colony:
         self.current_pop += 1
 
 
-    def _check_die_out(self):
+    def _check_die_out(self) -> bool:
         """Checks if a colony reaches certerion that do not permit progression.
-        For example, a certain gender dies out.
+        For example, if there are less than two individuals alive, then the colony dies out.
 
         Returns
             bool: true if passes the test and the colony survives.
         """
-        # check distinguishing by gender
-        for gender_counter in self.info.gender_counts.values():
-            if gender_counter == 0:
-                return False
-
-        return True
+        # check distinguishing by numbers
+        return len(self.spores) >= 2
 
 
     def progress_a_step(self):
         """
-        Generate the next step.
-
-        Args: 
-            step {dict} -- record of current step
-            pop {int} -- population of current step
+        Progress to the next step.
 
         Returns:
             bool: if the colony dies
