@@ -350,13 +350,14 @@ class ColonyViewIsoImage(ColonyViewIso):
 
         width: int = abs(ul[0] - lr[0])
         replace_y: int = ll[1]
-        replace_x: int = lr[0]
+        replace_x: int = ul[0]
 
-        overlay_image = self.imager.resize_image_by_width(image, width)
+        #overlay_image = self.imager.resize_image_by_width(image, width)
+        overlay_image = image
         img_height, img_width, _ = overlay_image.shape
 
         overlayed_part = frame[
-            replace_y - img_height : replace_y, replace_x - img_width : replace_x
+            replace_y - img_height: replace_y, replace_x: replace_x + img_width
         ]
         # crop overlapping part and fill with zero for addition operation
         overlayed_part[np.where(overlay_image[:, :, 3] > 0)] = (0, 0, 0)
@@ -365,6 +366,6 @@ class ColonyViewIsoImage(ColonyViewIso):
 
         # put the changed part back
         frame[
-            replace_y - img_height : replace_y, replace_x - img_width : replace_x
+            replace_y - img_height: replace_y, replace_x: replace_x + img_width
         ] = overlayed_part
         return frame

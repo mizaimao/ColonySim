@@ -68,8 +68,9 @@ class ImageLoader:
         
         if split > 1:  # split on x-axis
             images: List[np.ndarray] = np.split(image, split, axis=1)
-            return images
-        return [image]
+        else:
+            images = [image]
+        return [ImageLoader.crop_border(image) for image in images]
         
     @staticmethod
     def image_check(image: np.ndarray):
@@ -77,6 +78,19 @@ class ImageLoader:
         assert len(image.shape) == 3
         h, w, c = image.shape
         assert c == 4, "Image missing alpha channel."
+
+    @staticmethod
+    def crop_border(image: np.ndarray):
+        """Remove blank border of an image. Needed for low-quality assets."""
+        mask: np.ndarray = (image != 0)
+        n: int = mask.ndim
+        dims: Tuple[int, ...] = list(range(n))
+        slices: List[int] = [None] * n
+
+        for i in dims:
+            mask_i = mask.any(tuple(dims[:i] + dims[i+1:]))
+            slices[i] = (mask_i.argmax(), len(mask_i) - mask_i[::-1].argmax())
+        return image[tuple([slice(*s) for s in slices])]
 
     def get_imageset(self):
         return self.raw_image_set

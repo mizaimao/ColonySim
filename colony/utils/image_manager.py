@@ -106,7 +106,7 @@ class ImageManager:
             resized: List[np.ndarray] = []
             sizes = self.sizes[tile_name]
             for image, size in zip(org_images, sizes):
-                new_width: int = int(target_width * (1 + (size[0] - 1) * 0.5))
+                new_width: int = int(target_width * (1 + (max(size) - 1) * 0.5))
                 resized.append(ImageManager.resize_image_by_width(image, new_width))
             self.cache[target_width][tile_name] = resized
 
@@ -119,4 +119,12 @@ class ImageManager:
             index: If an index was not given, then a random image from that tile_name will be
                 returned.
         """
-        pass
+        if not width in self.cache:
+            self.rescale_tile_set(width)
+        
+        tile_images: List[np.ndarray] = self.cache[width][tile_name]
+        image_index: int = index if (index is not None) else self.rng.choice(len(tile_images))
+        image_array: np.ndarray = tile_images[image_index]
+        image_size: Tuple[int, int] = self.sizes[tile_name][image_index]
+
+        return image_array, image_size
