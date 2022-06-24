@@ -3,7 +3,7 @@
 
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 import yaml
 
 import cv2
@@ -38,8 +38,7 @@ class ImageManager:
         self.loader: ImageLoader = ImageLoader(**get_tileset_yaml(set_name))
 
         # stores images in various resolutions; key is zoom multiplier; 0 is raw size
-        self.cache: Dict[str, ImageSet] = {0: self.loader.get_imageset}
-        
+        self.cache: Dict[str, Any] = {0: self.loader.get_imageset}
 
     def load_new_set(self, set_name: str, reset_rng: bool = True):
         """Load a new tileset.
@@ -49,4 +48,9 @@ class ImageManager:
             self.rng = self.rng(self.seed)
         pass
 
-
+    @staticmethod
+    def resize_image_by_width(image: np.ndarray, width: int):
+        """Resize image with width while retaining aspect ratio."""
+        org_h, org_w, _ = image.shape
+        org_ratio: float = org_h / org_w
+        return cv2.resize(image, (width, int(width * org_ratio)))

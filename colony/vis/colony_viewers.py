@@ -28,6 +28,8 @@ ISO_TILE_OUTLINE_THICKNESS: int = 1
 ISO_TILE_OUTLINE_COLOR: Tuple[float, ...] = (210,) * 3
 ISO_TILE_LINE_COLOR: Tuple[float, ...] = (100, 100, 100)
 
+DEFAULT_TILE_SET: str = "space"
+
 DIRT_COLOR: Tuple[float, ...] = (83, 118, 155)  # BGR for sake of opencv
 
 
@@ -289,10 +291,12 @@ class ColonyViewIso(ColonyView):
 class ColonyViewIsoImage(ColonyViewIso):
     """Extends the basic isometric viewer to support image overlaying.
     """
-    def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap, seed: int = 42):
+    def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap, seed: int = 720):
         """New attributes would be cached images or values will that will be repetitively calculated.
         """
-        self.imager: ImageManager = ImageManager()
+        self.imager: ImageManager = ImageManager(
+            set_name=DEFAULT_TILE_SET,
+            seed=seed)
         self.rng = np.random.RandomState(seed)
 
         super().__init__(width, height, frame_width, frame_height, bitmap)
@@ -303,13 +307,6 @@ class ColonyViewIsoImage(ColonyViewIso):
         if image.shape[-1] == 3:  # three-channel image
             image = cv2.cvtColor(image, cv2.COLOR_RGB2RGBA)  # it's BGR but whatever
         return image
-
-    @staticmethod
-    def _resize_image_by_width(image: np.ndarray, width: int):
-        """Resize image with width while retaining aspect ratio."""
-        org_h, org_w, _ = image.shape
-        org_ratio: float = org_h / org_w
-        return cv2.resize(image, (width, int(width * org_ratio)))
 
     def paint_floors(self, tiles: Union[np.ndarray, List[np.ndarray]]) -> np.ndarray:
         """Paint floors with a given tileset."""
@@ -347,7 +344,7 @@ class ColonyViewIsoImage(ColonyViewIso):
         replace_y: int = ll[1]
         replace_x: int = lr[0]
 
-        overlay_image = self._resize_image_by_width(image, width)
+        overlay_image = self.imager.resize_image_by_width(image, width)
         img_height, img_width, _ = overlay_image.shape
 
         overlayed_part = frame[
