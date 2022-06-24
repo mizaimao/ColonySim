@@ -1,10 +1,8 @@
-mrr: cat
-
 name: space
 asset_root: "Isometric Space Colony"
 structure:
   power:
-    path: /Users/frank/Downloads/Exports/Props/LunarLandscape_Exports_001-48-SolarPanel-1.png
+    path: Props/LunarLandscape_Exports_001-48-SolarPanel-1.png
     sizes: "21, 12, 21, 12"
   habitat:
     path: Buildings/LunarLandscape_Exports_001-1-Building-4.png
