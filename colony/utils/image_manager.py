@@ -46,8 +46,8 @@ class ImageManager:
         self.rng = np.random.RandomState(seed)
         # image loader to read images from the disk
         self.loader: ImageLoader = ImageLoader(**get_tileset_yaml(set_name))
-        # stores images in various resolutions; key is zoom multiplier; None is raw size
-        self.cache: Dict[str, Any] = {None: {}}
+        # stores images in various resolutions; key mega tile width in px; 0 is raw size
+        self.cache: Dict[int, Any] = {0: {}}
         # stores how many x and y mega pixels each image occupies
         self.sizes: Dict[str, List[Tuple(int, int)]] = {}
 
@@ -62,7 +62,7 @@ class ImageManager:
             sizes: List[Tuple[int, int]] = tile_dict["sizes"]
             images: List[Tuple[int, int]] = tile_dict["images"]
             self.sizes[tile_name] = sizes
-            self.cache[None][tile_name] = images
+            self.cache[0][tile_name] = images
 
     def _prescale(self, tile_width: int, re_sizing: Tuple[float, float, float]):
         if tile_width <= 0:
@@ -74,8 +74,8 @@ class ImageManager:
 
         for scaling in np.arange(re_sizing[0], re_sizing[1], re_sizing[2]):
             # new size key
-            new_size_name: str = "{:.3f}".format(scaling)
-            self.rescale_tile_set(new_size_name)
+            target_width: int = int(tile_width  * scaling)
+            self.rescale_tile_set(target_width)
 
     @staticmethod
     def resize_image_by_width(image: np.ndarray, width: int) -> np.ndarray:
@@ -92,23 +92,31 @@ class ImageManager:
             self.rng = self.rng(self.seed)
         pass
 
-    def rescale_tile_set(self, scaling: str):
+    def rescale_tile_set(self, target_width: int):
         """Resize tileset to specified size."""
-        if scaling in self.cache:  # size already exists
+        if target_width in self.cache:  # size already exists
             return
-        assert len(scaling) == 5, "Scaling should be 3-position flotas, e.g., \"1.000\"."
+        assert isinstance(target_width, int), f"Use int as width to resize tileset, not {type(target_width)}"
         
-        # setup new size
-        scaling_f: float = float(scaling)
         # setup new scaling dict
-        self.cache[scaling] = {}  # Dict[str, List[np.ndarray]]
+        self.cache[target_width] = {}  # Dict[str, List[np.ndarray]]
         # unpack raw image set
-        for tile_name, org_images in self.cache[None].items():  # None is key for raw set
+        for tile_name, org_images in self.cache[0].items():  # None is key for raw set
             # resize each original tile image
-            #org_images: List[np.ndarray] = tile_dict['images']
-            new_width: int = int(org_images[0].shape[1] * scaling_f)
-            resized: List[np.ndarray] = [
-                ImageManager.resize_image_by_width(
-                    org_image, new_width) for org_image in org_images
-            ]
-            self.cache[scaling][tile_name] = resized
+            resized: List[np.ndarray] = []
+            sizes = self.sizes[tile_name]
+            for image, size in zip(org_images, sizes):
+                new_width: int = int(target_width * (1 + (size[0] - 1) * 0.5))
+                resized.append(ImageManager.resize_image_by_width(image, new_width))
+            self.cache[target_width][tile_name] = resized
+
+    def get_tile_image(self, tile_name: str, width: int, index: int = None):
+        """Get a tile image by tile_name.
+        Args
+            tile_name: Name of tile.
+            width: On-screen pixel width of each mega pixel. The function will then return the
+                image resized with this width (or generate it first if not cached).
+            index: If an index was not given, then a random image from that tile_name will be
+                returned.
+        """
+        pass
