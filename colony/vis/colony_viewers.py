@@ -307,7 +307,7 @@ class ColonyViewIsoImage(ColonyViewIso):
     @staticmethod
     def _resize_image_by_width(image: np.ndarray, width: int):
         """Resize image with width while retaining aspect ratio."""
-        org_w, org_h, _ = image.shape
+        org_h, org_w, _ = image.shape
         org_ratio: float = org_h / org_w
         return cv2.resize(image, (width, int(width * org_ratio)))
 
@@ -327,22 +327,22 @@ class ColonyViewIsoImage(ColonyViewIso):
         ul, ur, ll, lr = self._get_iso_coor_set(x, y)
 
         width: int = abs(ul[0] - lr[0])
-        replace_x: int = ll[1]
-        replace_y: int = lr[0]
+        replace_y: int = ll[1]
+        replace_x: int = lr[0]
 
         overlay_image = self._resize_image_by_width(image, width)
-        img_width, img_height, _ = overlay_image.shape
+        img_height, img_width, _ = overlay_image.shape
 
         overlayed_part = frame[
-            replace_x - img_width : replace_x, replace_y - img_height : replace_y
+            replace_y - img_height : replace_y, replace_x - img_width : replace_x
         ]
         # crop overlapping part and fill with zero for addition operation
         overlayed_part[np.where(overlay_image[:, :, 3] > 0)] = (0, 0, 0)
         # add overlaying image (but without alpha) to zero filled regions
         np.add(overlayed_part, overlay_image[:, :, :3], out=overlayed_part)
-        
+
         # put the changed part back
         frame[
-            replace_x - img_width : replace_x, replace_y - img_height : replace_y
+            replace_y - img_height : replace_y, replace_x - img_width : replace_x
         ] = overlayed_part
         return frame
