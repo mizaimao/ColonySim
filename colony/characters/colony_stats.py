@@ -100,9 +100,6 @@ class ColonyResourceManager:
             food_gaithered_by_this_spore: float = self.food_gaithring_rng.get()
             self.storage.res[11] += food_gaithered_by_this_spore
 
-            if sid == 0:
-                print(self.storage.res[11], spore.storage.res[11], food_gaithered_by_this_spore)
-
             # spore consumes food, and uptate amount in its storage
             # the spore always take food from its own storage first, and then grabs from colony stroage
             additional_food_unit: int = 0  # variable tracks additional food to take in order to fill spores belly

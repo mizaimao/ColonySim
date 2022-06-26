@@ -1,6 +1,6 @@
 import numpy as np
 from dataclasses import dataclass
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Optional
 
 from colony.configuration import res_cfg
 from colony.characters.storage import SporeStorage
@@ -12,6 +12,7 @@ from colony.progression.step import get_direction, get_next_coor
 sex_mapper = {1: "A", 3: "B"}
 INITAL_HEALTH: int = 100
 INITIAL_POPCAP: int = 40
+HEALTH_CAP: int = 100
 
 
 @dataclass
@@ -22,6 +23,8 @@ class Spore:
     health: int
 
     storage: SporeStorage
+
+    health_cap: Optional[int] = HEALTH_CAP
 
 
 class ColonySporeManager:
@@ -45,6 +48,7 @@ class ColonySporeManager:
         self.allow_init_overlapping: bool = False
         self.rng = np.random.RandomState(seed=seed)
         self.stravation_health_hit_gen: BatchNormal = BatchNormal(seed, mean=10., std=2.)
+        self.self_healing_gen: BatchNormal = BatchNormal(seed, mean=1., std=.1)
 
         # initial population
         self.current_pop: int = 0
@@ -157,6 +161,10 @@ class ColonySporeManager:
                 if spore.storage.res[11] <= 0:
                     health_hit: float = max(0, self.stravation_health_hit_gen.get())
                     spore.health -= health_hit
+                # spore does't stave, so self-heal a little a bit
+                else:
+                    self_heal: float = max(0., self.self_healing_gen.get())
+                    spore.health = min(spore.health_cap, spore.health + self_heal)
                 
                 if spore.health <= 0:  # spore will die because of stravation
                     self.remove_a_spore(spore_id)

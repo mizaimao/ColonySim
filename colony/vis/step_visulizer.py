@@ -71,7 +71,8 @@ class StepVisulizer:
             self.colony,
             frame,
             steps=5,
-            max_rows=30,
+            max_rows=15,
+            text_width=80,
             custom_lines=[
                 res11_info,
                 res21_info,

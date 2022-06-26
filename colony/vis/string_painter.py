@@ -31,6 +31,7 @@ class StringPainter:
         font: int = POP_FONT,
         text_color: Tuple[int, ...] = POP_COLOR,
         text_thickness: int = POP_THICKNESS,
+        text_width: int = 30
     ):
         """
         Two lazy properties will be calculated when the first frame is parsed. Assuming the rest of frames
@@ -41,15 +42,15 @@ class StringPainter:
         self.font: int = font
         self.text_color: Tuple[int, ...] = text_color
         self.text_thickness: int = text_thickness
+        self.text_width: int = text_width
 
         # lazy properties
         self.font_scalar: float = None
         self.pixel_per_line: int = None
 
-    @staticmethod
-    def get_optimal_font_scale(width: int, text: str = None):
+    def get_optimal_font_scale(self, width: int, text: str = None):
         if not text:
-            text = " " * 30
+            text = " " * self.text_width
         for scale in range(59, -1, -1):
             textSize = cv2.getTextSize(
                 text,
@@ -154,7 +155,7 @@ class StringPainter:
         """
         if self.font_scalar is None:
             self.font_scalar = self.get_optimal_font_scale(
-                width=frame.shape[1], text=" " * 200
+                width=frame.shape[1], text=" " * self.text_width
             )
             line_count: int = line_count_override
             total_line_count: int = (
@@ -180,6 +181,7 @@ def add_info_to_main_pane(
     frame: np.ndarray,
     max_rows: int = 20,
     steps: int = 5,
+    text_width: int = 200,
     custom_lines: List[str] = None
 ):
     """Print game info to main pane (or any frame).
@@ -202,6 +204,7 @@ def add_info_to_main_pane(
             font=INFO_FONT,
             text_color=INFO_COLOR,
             text_thickness=INFO_THICKNESS,
+            text_width=text_width,
         )
 
     assert (
