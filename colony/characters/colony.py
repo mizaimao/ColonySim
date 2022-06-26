@@ -2,7 +2,9 @@ import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, Tuple, List
 
+
 from colony.characters.colony_stats import HappinessManager, ColonyResourceManager
+from colony.characters.buildings import ColonyBuildingManager
 from colony.characters.spore import Spore
 from colony.characters.storage import ColonyStorage, SporeStorage
 from colony.progression.step import *
@@ -66,9 +68,14 @@ class Colony:
         # pointers
         self.spores: Dict[int, Spore] = {} # stores all shown spores
         self.info: ColonyGeneralInfo = ColonyGeneralInfo()
-        self.printer: InfoManager = InfoManager(silent_mode=(not verbose))
         self.storage: ColonyStorage = ColonyStorage(res=res_cfg.starting_res)
+        # managers
+        self.res_man: ColonyResourceManager = ColonyResourceManager(self.spores, self.storage)
+        self.building_man: ColonyBuildingManager = ColonyBuildingManager()
+
+        # utilities
         self.rng = np.random.RandomState(seed)
+        self.printer: InfoManager = InfoManager(silent_mode=(not verbose))
 
         # create population
         self._create_init_population(init_pop=init_pop)
@@ -239,19 +246,7 @@ class Colony:
                 new_step[new_coor].append(spore_id)
                 spore_counter += 1
 
-        # for coor, (survival_dict, new_born) in events.items():
-        #     for new_born in range(event_results[1]):
-        #         sex = 1 if np.random.random() <= 0.5 else 3
-        #         neary_by_coor = get_next_coor(get_direction(), coor, self.width, self.height)
-
-        #         self._create_individual(sex=sex,
-        #                                 coor=neary_by_coor,
-        #                                 step_dict=new_step)
-        #         self.printer.info(f"A new baby was born, new pop: {self.current_pop}.")
-
         self.step = new_step
-
-
         self.current_iteration += 1
 
         return True

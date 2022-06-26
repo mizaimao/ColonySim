@@ -267,7 +267,7 @@ class ColonyViewIso(ColonyView):
                 ISO_TILE_OUTLINE_COLOR,
             )
 
-        # # draw underground left side
+        # draw underground left side
         if background and (x == 0):
             contours = np.array([ul, ll, ll, ul]) + [lower_shifter, lower_shifter, half_lower_shifter, half_lower_shifter]
             self.draw_filled_polygon(

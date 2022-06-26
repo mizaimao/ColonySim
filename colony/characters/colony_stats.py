@@ -1,5 +1,5 @@
 """Classes managing colony stats."""
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from colony.configuration import res_cfg
 from colony.characters.spore import Spore
@@ -57,17 +57,14 @@ class ColonyResourceManager:
         self.spores: Dict[int, Spore] = spore
         self.storage: ColonyStorage = storage
 
-        self.r11_speed
-        pass
+        # how much man power assigned for each types of resource
+        self.res_manpower: Dict[int, int] = {}  # {resource_type: manpower}
 
-    def tech_upgrade(resource: int = None):
-        """Tech upgrade for a certain type of resource."""
-        pass
+        # buildings for specific type of resource: {building_id: tech_level}
+        self.r11_sctructure: Dict[int, int] = {}
+        self.r21_sctructure: Dict[int, int] = {}
+        self.r22_sctructure: Dict[int, int] = {}
+        self.r23_sctructure: Dict[int, int] = {}
 
-    def tech_downgrade(resource: int = None):
-        """Tech donwgrade for a certain type of resource."""
-        pass
-
-    def tech_removed(resource: int = None):
-        """Tech building destroyed, therefore set gaithering speed to 0-indexed value."""
+    def calculate_income(self):
         pass
