@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import List, Optional, Union
 
 
-BATCH_SIZE: int = 1000
+BATCH_SIZE: int = 5000
 
 
 @dataclass
@@ -28,13 +28,40 @@ class BatchRandom:
     def _build_new_batch(self):
         pass
 
-    def get(self):
+    def get(self, size: int = 1) -> Union[int, float, np.ndarray]:
+        """Retrive a single value from generated stack, and generate a new batch if it runs out."""
+        if size > 1:
+            return self.get_batch(size)
+
         value: Union[int, float] = self.queue[self.index]
         self.index += 1
         # exhausted, build a new batch
         if self.index == self.batch_size:
             self._build_new_batch()
         return value
+
+    def get_batch(self, size: int) -> np.ndarray:
+        """Get a batch of random numbers."""
+        assert size <= self.batch_size * 100, "Requested batch is 100x of batch size, \
+            please consider a more efficient way to get random numbers."
+        end: int = self.index + size
+        # values = front_list + [middle_lists] + leftover_list
+        values: List[np.ndarray] = [self.queue[self.index: end]]
+        new_size: int = size - len(values[0])
+        self.index += len(values[0])
+        
+        # append middle lists
+        for _ in range(int(new_size // self.batch_size)):
+            self._build_new_batch()
+            values.append(self.queue.copy())
+        
+        # adjust leftover index and add values
+        if self.index == self.batch_size:
+            self._build_new_batch()
+        leftover: int = new_size % self.batch_size
+        assert self.index + leftover < self.batch_size, "Sanity check failed, index bug."
+        values.append(self.queue[self.index: self.index + leftover])
+        return np.concatenate(values)
 
 
 @dataclass
