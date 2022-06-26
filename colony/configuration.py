@@ -3,7 +3,7 @@
 import yaml
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, List, Dict
 
 from colony.generators.map_generator import GreenMapGenerator
 
@@ -90,8 +90,10 @@ map_cfg = MapSetup(
 @dataclass
 class ResSetup:
     """Resource settings"""
-    starting_res: dict[int, int] = field(default_factory=lambda: {})
-
+    income_speed_std_pct: float
+    
+    starting_res: Dict[int, int] = field(default_factory=lambda: {})
+    income_speed: Dict[int, List[int]] = field(default_factory=lambda: {})
 
 res_cfg = ResSetup(
     **yaml.safe_load(open(config_path.joinpath("resource/default.yaml")))

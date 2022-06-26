@@ -1,6 +1,8 @@
 """Classes managing colony stats."""
 from typing import Dict, List
-from colony.characters.spore import Spore, FOOD_SPEED, RES21_SPEED, RES22_SPEED, RES23_SPEED
+
+from colony.configuration import res_cfg
+from colony.characters.spore import Spore
 from colony.characters.storage import ColonyStorage, SporeStorage
 
 # backtracking histroy length
@@ -54,5 +56,7 @@ class ColonyResourceManager:
         # setup pointers to Colony instance
         self.spores: Dict[int, Spore] = spore
         self.storage: ColonyStorage = storage
+
+        
 
         pass

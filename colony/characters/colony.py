@@ -3,7 +3,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Tuple, List
 
 from colony.characters.colony_stats import HappinessManager, ColonyResourceManager
-from colony.characters.spore import Spore, FOOD_SPEED, RES21_SPEED, RES22_SPEED, RES23_SPEED
+from colony.characters.spore import Spore
 from colony.characters.storage import ColonyStorage, SporeStorage
 from colony.progression.step import *
 from colony.configuration import spore_cfg, res_cfg, ResSetup
@@ -150,10 +150,10 @@ class Colony:
         """
         # add resources gathered by spores
         res: Dict[int, int] = self.storage.res
-        res[11] += len(self.spores) * FOOD_SPEED[self.tech_stage]  # food
-        res[21] += len(self.spores) * RES21_SPEED[self.tech_stage]
-        res[22] += len(self.spores) * RES22_SPEED[self.tech_stage]
-        res[23] += len(self.spores) * RES23_SPEED[self.tech_stage]
+        res[11] += len(self.spores) * res_cfg.income_speed[11][self.tech_stage]  # food
+        res[21] += len(self.spores) * res_cfg.income_speed[11][self.tech_stage]
+        res[22] += len(self.spores) * res_cfg.income_speed[11][self.tech_stage]
+        res[23] += len(self.spores) * res_cfg.income_speed[11][self.tech_stage]
 
         # random food list, if a spore chooses to take
         food_takes: np.ndarray
