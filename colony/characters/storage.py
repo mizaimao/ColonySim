@@ -24,4 +24,3 @@ class ColonyStorage(Storage):
 @dataclass
 class SporeStorage(Storage):
     resource_limit: Optional[int] = 10
-    pass

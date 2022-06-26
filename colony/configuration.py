@@ -91,9 +91,12 @@ map_cfg = MapSetup(
 class ResSetup:
     """Resource settings"""
     income_speed_std_pct: float
-    
+    food_consumption_per_pop: float
+    mantainance_cost: Any
+
     starting_res: Dict[int, int] = field(default_factory=lambda: {})
     income_speed: Dict[int, List[int]] = field(default_factory=lambda: {})
+    
 
 res_cfg = ResSetup(
     **yaml.safe_load(open(config_path.joinpath("resource/default.yaml")))

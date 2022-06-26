@@ -2,7 +2,9 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Dict, Tuple, List
 
+from colony.configuration import res_cfg
 from colony.characters.storage import SporeStorage
+from colony.utils.batch_random import BatchNormal, BatchUniform
 from colony.progression.step import get_direction, get_next_coor
 
 
@@ -42,6 +44,7 @@ class ColonySporeManager:
         # other settings
         self.allow_init_overlapping: bool = False
         self.rng = np.random.RandomState(seed=seed)
+        self.stravation_health_hit_gen: BatchNormal = BatchNormal(seed, mean=10., std=2.)
 
         # initial population
         self.current_pop: int = 0
@@ -94,7 +97,7 @@ class ColonySporeManager:
             sex=sex,
             age=0,
             health=INITAL_HEALTH,
-            storage=SporeStorage(),
+            storage=SporeStorage(res={res_type: 0 for res_type in res_cfg.starting_res.keys()}),
         )
         # add to spore dict
         self.spores[s.sid] = s
@@ -112,7 +115,7 @@ class ColonySporeManager:
         del self.spores[spore_id]
         self.current_pop -= 1
 
-    def progress_spore_step(self):
+    def calculate_spore_movements(self):
         # processed step placeholder
         new_step = {}
         # generate next moves of spores in a batch
@@ -139,3 +142,33 @@ class ColonySporeManager:
 
         self.step = new_step
         return self.step
+
+    def calculate_spore_health(self):
+        # check spore health and reproduction first
+        # NOTE: this function should be executed AFTER resource calculation/progression step
+        health: List[float] = []
+
+        # process spores by tile
+        for coor, spores_in_tile in self.step.items():
+            # process each spore on this tile
+            for spore_inlist_id, spore_id in enumerate(spores_in_tile):
+                spore: Spore = self.spores[spore_id]
+                # spore runs out of food and didn't manage to grab any from colony storage
+                if spore.storage.res[11] <= 0:
+                    health_hit: float = max(0, self.stravation_health_hit_gen.get())
+                    spore.health -= health_hit
+                
+                if spore.health <= 0:  # spore will die because of stravation
+                    self.remove_a_spore(spore_id)
+                    del self.step[coor][spore_inlist_id]
+                    if (self.step[coor]) == 0:
+                        del self.step[coor]
+                else:
+                    health.append(spore.health)
+
+                spore.age += 1
+        return health
+
+    def expand_if_available(self):
+        if self.current_pop < self.pop_cap:
+            self.add_a_spore(sex=self.rng.choice(list(sex_mapper.keys())))

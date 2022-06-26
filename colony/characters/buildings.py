@@ -29,6 +29,9 @@ class ColonyBuildingManager:
     def __init__(self):
         self.buildings: Dict[int, Building] = {}
 
+    def progress_building_step(self):
+        pass
+
     def add_building(
         self,
         id: int,

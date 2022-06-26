@@ -78,7 +78,7 @@ class Colony:
         self.printer: InfoManager = InfoManager(silent_mode=(not verbose))
 
         
-    def _check_die_out(self) -> bool:
+    def check_die_out(self) -> bool:
         """Checks if a colony reaches certerion that do not permit progression.
         For example, if there are less than two individuals alive, then the colony dies out.
 
@@ -94,63 +94,46 @@ class Colony:
         Differences are this function computes the current step, while "progress_a_step" projects
         the next iteration.
         """
-        # add resources gathered by spores
+        # calculate resource
+        self.res_man.progress_res_step()
+        # calculate building
+        self.building_man.progress_building_step()
+        # calculate spore health
+        health_list: List[float] = self.spore_man.calculate_spore_health()
+        # calculate happiness and expand colony if available
+        expansion_ready: bool = self.happiness_man.update(health_list)
+        if expansion_ready:
+            self.spore_man.expand_if_available()
 
-        # random food list, if a spore chooses to take
-        food_takes: np.ndarray
+        # new pop happens before this statement
+        spore_step: Dict[Tuple[int, int], List[int]] = self.spore_man.calculate_spore_movements()
+        
+        new_step = spore_step
+        return new_step
 
-        # variables for other calculations
-        healths: List[float] = []
-
-        # process spores by tile
-        for coor, spores_in_tile in self.step.items():
-            # process each spore on this tile
-            for spore_inlist_id, spore_id in enumerate(spores_in_tile):
-                s: Spore = self.spores[spore_id]
-                # spore consumes resource (food)
-                if self.storage.res[11] > 0:  # food
-                    self.storage.res[11] -= 1
-                else:
-                    s.health -= self.rng.uniform(1, 20)  # food shortage, hurting health
-
-                # spore ages
-                s.age += 1
-
-                healths.append(s.health)
-                # spore health check
-                if s.health <= 0:
-                    self._remove_spore(spore_id)
-                    del self.step[coor][spore_inlist_id]
-                    if (self.step[coor]) == 0:
-                        del self.step[coor]
-
-                # spore takes food
-
-        # calculate happiness
-        expansion_ready: bool = self.happiness_man.update(healths)
-        if expansion_ready and self.current_pop < self.pop_cap:
-            self._create_individual(sex=self.rng.choice(list(sex_mapper.keys())))
 
     def progress_a_step(self):
         """
-        Progress to the next step.
+        Progress to the next step. We first compuate what happens in the current step, and then
+        First, we calculate resource income and consumption;
+        Second, we update spore stats (e.g. update their health and location);
+        Thrid, merge spore step and building step so that they can be used for visualization
 
         Returns:
             bool: if the colony dies.
         """
         # calculate the current step, because progression will be based it results of current step
-        self.calculate_current_step()
+        new_step = self.calculate_current_step()
 
         # save current step
         if self.enable_history:
             self.step_record.append(self.step.copy())
 
-        if not self._check_die_out():
+        if not self.check_die_out():
             self.printer.info("Colony failed, spores unable to reproduce.")
             return False
 
-        spore_step: Dict[Tuple[int, int], List[int]] = self.spore_man.progress_spore_step()
-        self.step = spore_step
+        self.step = new_step
         self.current_iteration += 1
 
         return True

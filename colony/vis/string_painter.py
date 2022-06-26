@@ -16,6 +16,8 @@ INFO_COLOR: Tuple[int, ...] = (100, 100, 100, 0)
 INFO_THICKNESS: int = 1
 INFO_DECAY: int = 20
 
+CUST_LINE_COLOR: Tuple[int, ...] = (240, 240, 240, 0)
+
 INFO_PANE_COLOR: int = 220
 
 
@@ -141,6 +143,7 @@ class StringPainter:
         frame: np.ndarray,
         line_lists: List[List[str]],
         line_count_override: int,
+        color_override: Tuple[int, ...] = INFO_COLOR
     ):
         """Paint strings to target frame. Contains multiple sets of lines. Each set will
         have a shallower color than the previous set.
@@ -160,7 +163,7 @@ class StringPainter:
             self.pixel_per_line = int(frame.shape[0] / total_line_count)
 
         line_id: int = 1
-        color = INFO_COLOR
+        color = color_override
 
         for i, lines in enumerate(line_lists):
             line_id = self.paint_lines(
@@ -177,6 +180,7 @@ def add_info_to_main_pane(
     frame: np.ndarray,
     max_rows: int = 20,
     steps: int = 5,
+    custom_lines: List[str] = None
 ):
     """Print game info to main pane (or any frame).
     Args
@@ -189,6 +193,7 @@ def add_info_to_main_pane(
         steps: most recent set of info strings will be shown in most heavy color, and
             the less recent ones will have shallower colors. This arg controls how far
             back we want to print info.
+        custom_lines: custom lines other than normal log info.
     """
     if painter is None:
         painter = StringPainter(
@@ -202,8 +207,12 @@ def add_info_to_main_pane(
     assert (
         not colony.printer.info_stack
     ), "Colony info logger should be empty when printing strings to main frame."
-    line_lists = colony.printer.info_history[-steps:]  # last serveral steps
-    painter.paint_lines_decaying(frame, line_lists[::-1],line_count_override=max_rows)
+    if custom_lines is None:
+        line_lists = colony.printer.info_history[-steps:]  # print last serveral steps
+        painter.paint_lines_decaying(frame, line_lists[::-1], line_count_override=max_rows)
+    else:
+        painter.paint_lines_decaying(frame, [custom_lines], line_count_override=max_rows, color_override=CUST_LINE_COLOR)
+
 
     return painter
 
