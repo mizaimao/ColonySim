@@ -57,6 +57,17 @@ class ColonyResourceManager:
         self.spores: Dict[int, Spore] = spore
         self.storage: ColonyStorage = storage
 
-        
+        self.r11_speed
+        pass
 
+    def tech_upgrade(resource: int = None):
+        """Tech upgrade for a certain type of resource."""
+        pass
+
+    def tech_downgrade(resource: int = None):
+        """Tech donwgrade for a certain type of resource."""
+        pass
+
+    def tech_removed(resource: int = None):
+        """Tech building destroyed, therefore set gaithering speed to 0-indexed value."""
         pass
