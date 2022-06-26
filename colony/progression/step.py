@@ -1,5 +1,5 @@
 import numpy as np
-from colony.characters.spore import Spore
+#from colony.characters.spore import Spore
 
 from colony.configuration import spore_cfg
 
@@ -70,41 +70,41 @@ def determine_event(sex_a: int, sex_b: int):
     return 0
 
 
-def event_handler(a: Spore, b: Spore):
-    """
-    Generate event result of two spores.
+# def event_handler(a: Spore, b: Spore):
+#     """
+#     Generate event result of two spores.
 
-    Args:
-        a, b {Spore} -- two interactive spores 
+#     Args:
+#         a, b {Spore} -- two interactive spores 
 
-    Returns:
-        [bool, bool] -- if the two spores survive
-        int -- number of newborns
-    """
-    event_code = determine_event(a.sex, b.sex)
-    if event_code == 0:
-        return [True, True], 0
+#     Returns:
+#         [bool, bool] -- if the two spores survive
+#         int -- number of newborns
+#     """
+#     event_code = determine_event(a.sex, b.sex)
+#     if event_code == 0:
+#         return [True, True], 0
 
-    elif event_code == 1: # fight
-        fatality = spore_cfg.duel_fatality
-        probs = np.random.random(2)
-        a_survives = True
-        b_survices = True 
-        if probs[0] <= fatality: # fatal fight
-            a_survives = False
-        if probs[1] < fatality: # a dies
-            b_survices = False 
-        return [a_survives, b_survices], 0
+#     elif event_code == 1: # fight
+#         fatality = spore_cfg.duel_fatality
+#         probs = np.random.random(2)
+#         a_survives = True
+#         b_survices = True 
+#         if probs[0] <= fatality: # fatal fight
+#             a_survives = False
+#         if probs[1] < fatality: # a dies
+#             b_survices = False 
+#         return [a_survives, b_survices], 0
         
-    elif event_code == 2: # proliforate 
-        probs = np.random.random()
-        new_born = 0
-        if probs <= spore_cfg.one_night_chance:
-            new_born += 1
-        return [True, True], new_born
+#     elif event_code == 2: # proliforate 
+#         probs = np.random.random()
+#         new_born = 0
+#         if probs <= spore_cfg.one_night_chance:
+#             new_born += 1
+#         return [True, True], new_born
 
-    else:
-        raise NotImplementedError()
+#     else:
+#         raise NotImplementedError()
 
 
 def get_direction(size: int = 1):

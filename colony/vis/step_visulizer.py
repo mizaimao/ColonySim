@@ -65,7 +65,7 @@ class StepVisulizer:
     def paint_info_pane(self) -> np.ndarray:
         """Paint infomation pane, containing items like cycle count and population.
         """
-        colony_size_info = "Colony Size: {}".format(self.colony.current_pop)
+        colony_size_info = "Colony Size: {}".format(self.colony.spore_man.current_pop)
         colony_cycle_info = "Iteration: {}".format(self.colony.current_iteration)
         # # add text info to pane
         left_info = self.info_pane_painter.paint_lines([colony_size_info, colony_cycle_info])

@@ -99,12 +99,12 @@ class CurvePainter:
     def draw_colony_curves(self, colony: Colony) -> np.ndarray:
         """Draw a series of curves by reading the current status from a colony instance."""
         # read values from colony instance
-        population: int = colony.current_pop
+        population: int = colony.spore_man.current_pop
 
-        food: int = colony.storage.res[11]
-        res_21: int = colony.storage.res[21]
-        res_22: int = colony.storage.res[22]
-        res_23: int = colony.storage.res[23]
+        food: int = colony.res_man.storage.res[11]
+        res_21: int = colony.res_man.storage.res[21]
+        res_22: int = colony.res_man.storage.res[22]
+        res_23: int = colony.res_man.storage.res[23]
 
         # build a blank array to draw curves on
         frame = np.full((self.height, self.width, 3), POP_PANE_COLOR, dtype=np.uint8)

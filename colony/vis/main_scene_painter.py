@@ -39,7 +39,7 @@ class MainScenePainter:
         for (x, y) in step_sorted:
             spores = self.colony.step[(x, y)]
             # show only the first spore
-            top_spore = self.colony.spores[spores[0]]
+            top_spore = self.colony.spore_man.spores[spores[0]]
             # dye this block
             splore_color = color_dict[top_spore.sex]
             self.painter.paint_large_pixel(frame, x, y, splore_color, outline=False)
