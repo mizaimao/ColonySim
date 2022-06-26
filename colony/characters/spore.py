@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Tuple
 
+from colony.characters.storage import SporeStorage
+
 FOOD_SPEED: Tuple[int, ...] = (2, 4, 8, 12)
 RES21_SPEED: Tuple[int, ...] = (1, 2, 3, 4)
 RES22_SPEED: Tuple[int, ...] = (1, 2, 3, 4)
@@ -13,3 +15,5 @@ class Spore:
     sex: int
     age: int
     health: int
+
+    storage: SporeStorage

@@ -2,9 +2,9 @@ import numpy as np
 from dataclasses import dataclass, field
 from typing import Dict, Tuple, List
 
-from colony.characters.colony_stats import HappinessManager
+from colony.characters.colony_stats import HappinessManager, ColonyResourceManager
 from colony.characters.spore import Spore, FOOD_SPEED, RES21_SPEED, RES22_SPEED, RES23_SPEED
-from colony.characters.storage import ColonyStorage
+from colony.characters.storage import ColonyStorage, SporeStorage
 from colony.progression.step import *
 from colony.configuration import spore_cfg, res_cfg, ResSetup
 from colony.utils.info_manager import InfoManager
@@ -110,7 +110,8 @@ class Colony:
             sid=self.id_counter,
             sex=sex,
             age=0,
-            health=INITAL_HEALTH)
+            health=INITAL_HEALTH,
+            storage=SporeStorage())
         # add spore pointer
         self.spores[s.sid] = s
 
@@ -154,6 +155,10 @@ class Colony:
         res[22] += len(self.spores) * RES22_SPEED[self.tech_stage]
         res[23] += len(self.spores) * RES23_SPEED[self.tech_stage]
 
+        # random food list, if a spore chooses to take
+        food_takes: np.ndarray
+
+
         # variables for other calculations
         healths: List[float] = []
 
@@ -178,6 +183,10 @@ class Colony:
                     del self.step[coor][spore_inlist_id]
                     if (self.step[coor]) == 0:
                         del self.step[coor]
+
+
+                # spore takes food
+
 
         # calculate happiness
         expansion_ready: bool = self.happiness.update(healths)

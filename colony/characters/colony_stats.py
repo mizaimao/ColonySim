@@ -1,12 +1,14 @@
 """Classes managing colony stats."""
 from typing import Dict, List
-from colony.characters.spore import Spore
+from colony.characters.spore import Spore, FOOD_SPEED, RES21_SPEED, RES22_SPEED, RES23_SPEED
+from colony.characters.storage import ColonyStorage, SporeStorage
 
 # backtracking histroy length
 MAX_TRACKING: int = 1000
 
 # lager -> slower progress bar of population-expansion-ready flag
 POP_PROGRESS_DIVIDER: float = 10.
+
 
 class HappinessManager:
     """Calculates colony happiness."""
@@ -43,3 +45,14 @@ class HappinessManager:
 
         expansion_ready: bool = self.next_pop_progress >= 100.
         return expansion_ready
+
+
+class ColonyResourceManager:
+    """Mananges colony resources, like auto-harvest income and distribution."""
+    def __init__(self, spore: Dict[int, Spore], storage: ColonyStorage):
+
+        # setup pointers to Colony instance
+        self.spores: Dict[int, Spore] = spore
+        self.storage: ColonyStorage = storage
+
+        pass
