@@ -61,13 +61,13 @@ class ColonyResourceManager:
         self,
         spore_man: ColonySporeManager,
         happiness_man: HappinessManager,
-        buildings: ColonyBuildingManager,
+        building_man: ColonyBuildingManager,
         seed: int = 720
     ):
 
         # setup pointers to Colony instance
         self.spore_man: ColonySporeManager = spore_man
-        self.buildings: ColonyBuildingManager = buildings
+        self.building_man: ColonyBuildingManager = building_man
         self.happiness_man: HappinessManager = happiness_man
 
         self.storage: ColonyStorage = ColonyStorage(res_cfg.starting_res)

@@ -17,6 +17,8 @@ INFO_THICKNESS: int = 1
 INFO_DECAY: int = 20
 
 CUST_LINE_COLOR: Tuple[int, ...] = (240, 240, 240, 0)
+CUST_LINE_FONT: int = cv2.FONT_HERSHEY_SIMPLEX
+CUST_LINE_THICKNESS: int = 2
 
 INFO_PANE_COLOR: int = 220
 
@@ -144,7 +146,7 @@ class StringPainter:
         frame: np.ndarray,
         line_lists: List[List[str]],
         line_count_override: int,
-        color_override: Tuple[int, ...] = INFO_COLOR
+        color_override: Tuple[int, ...] = INFO_COLOR,
     ):
         """Paint strings to target frame. Contains multiple sets of lines. Each set will
         have a shallower color than the previous set.
@@ -182,7 +184,7 @@ def add_info_to_main_pane(
     max_rows: int = 20,
     steps: int = 5,
     text_width: int = 200,
-    custom_lines: List[str] = None
+    custom_lines: List[str] = None,
 ):
     """Print game info to main pane (or any frame).
     Args
@@ -198,12 +200,21 @@ def add_info_to_main_pane(
         custom_lines: custom lines other than normal log info.
     """
     if painter is None:
+        if custom_lines is not None:
+            font: int = CUST_LINE_FONT
+            text_color: int = CUST_LINE_COLOR
+            thickness: int = CUST_LINE_THICKNESS
+        else:
+            font = INFO_FONT
+            text_color = INFO_COLOR
+            thickness = INFO_THICKNESS
+
         painter = StringPainter(
             front_spaces=1,
             line_spaces=1,
-            font=INFO_FONT,
-            text_color=INFO_COLOR,
-            text_thickness=INFO_THICKNESS,
+            font=font,
+            text_color=text_color,
+            text_thickness=thickness,
             text_width=text_width,
         )
 
