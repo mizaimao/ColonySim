@@ -1,4 +1,5 @@
 """Classes managing colony stats."""
+import numpy as np
 from typing import Dict, List, Tuple
 
 from colony.configuration import res_cfg
@@ -81,16 +82,23 @@ class ColonyResourceManager:
         self.food_consumption_rng: BatchNormal = BatchNormal(
             seed, mean=food_consumption_per_pop, std=food_consumption_per_pop * res_cfg.income_speed_std_pct[11] 
         )
+        r21_gaithring_speed: float = res_cfg.income_speed[21][0]
+        self.r21_gaithering_rng: BatchNormal = BatchNormal(
+            seed, mean=r21_gaithring_speed, std=r21_gaithring_speed * res_cfg.income_speed_std_pct[21] 
+        )
 
         # how much man power assigned for each types of resource
         self.res_manpower: Dict[int, int] = {}  # {resource_type: manpower}
 
     def progress_res_step(self):
+        # calculate resource income by each buildings
+
+        # add r21 collected by spores to colony storage
+        self._calculate_r21_from_spores_collection()
+
         # add food collected by spores to colony storage
         # and calculate food consumption/distribution by spores
         self._calculate_food_from_spores_collection()
-
-        pass
 
     def _calculate_food_from_spores_collection(self):
         food_consumption_per_pop: float = self.food_consumption_rng.get()
@@ -116,6 +124,10 @@ class ColonyResourceManager:
                 else:  # colony storage will be emptied, and spore's stroage cannot be filled fully
                     self.storage.res[11] = 0
                     spore.storage.res[11] = max(0, food_to_grab_from_colony_storage - spore.storage.res[11])
+
+    def _calculate_r21_from_spores_collection(self):
+        r21_gaithered_by_spores: float = np.sum(self.r21_gaithering_rng.get(size=len(self.spore_man.spores)))
+        self.storage.res[21] += r21_gaithered_by_spores
 
     def calculate_all_income(self):
         """Calculate income of each types of resources and update to colony storage."""
