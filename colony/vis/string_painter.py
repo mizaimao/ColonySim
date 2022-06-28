@@ -27,11 +27,16 @@ FT_FONT_NAME: str = "Arial.ttf"  # non-standard fonts may require file path
 
 
 class FontPutter:
+    """Wrapper for putText function in opencv with different backends."""
     def __init__(self, use_ft: bool = FT_FONT_OVERRIDE):
         if use_ft:
             self.putter: Callable = cv2.freetype
         else:
             self.putter = cv2.putText
+    
+    def putText(self, **kwargs):
+        self.putter(**kwargs)
+        
 
 class StringPainter:
     """Adding text on the given frame."""

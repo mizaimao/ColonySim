@@ -101,7 +101,7 @@ class ColonyResourceManager:
         self._calculate_food_from_spores_collection()
 
     def _calculate_food_from_spores_collection(self):
-        food_consumption_per_pop: float = self.food_consumption_rng.get()
+        original_food: float = self.storage.res[11]
 
         for sid, spore in self.spore_man.spores.items():
             # spore now put their collected food into colony's storage
@@ -110,6 +110,7 @@ class ColonyResourceManager:
 
             # spore consumes food, and uptate amount in its storage
             # the spore always take food from its own storage first, and then grabs from colony stroage
+            food_consumption_per_pop: float = self.food_consumption_rng.get()
             additional_food_unit: int = 0  # variable tracks additional food to take in order to fill spores belly
             if spore.storage.res[11] > food_consumption_per_pop:  # spore's own storage minus food amount it consumes
                 spore.storage.res[11] -= food_consumption_per_pop
@@ -125,9 +126,25 @@ class ColonyResourceManager:
                     self.storage.res[11] = 0
                     spore.storage.res[11] = max(0, food_to_grab_from_colony_storage - spore.storage.res[11])
 
+        eventual_food: float = self.storage.res[11]
+        self._update_resource_amount_with_limit(resource_type=11, addition=eventual_food-original_food)
+
+    def _update_resource_amount_with_limit(self, resource_type: int, addition: float):
+        """When a certain type of resource to be added to storage, it's possible that the storage is already full and
+        cannot procees. This function compares the current resource value and addition, and decide the final amount.
+        """
+        current_res_value: float = self.storage.res[resource_type]
+        current_res_limit: float = self.storage.resource_limits[resource_type]
+        # if currently this type exceeds storage limit, then no update
+        if current_res_value >= current_res_limit:
+            pass
+        else:
+            self.storage.res[resource_type] = min(current_res_limit, current_res_value + addition)
+
+
     def _calculate_r21_from_spores_collection(self):
         r21_gaithered_by_spores: float = np.sum(self.r21_gaithering_rng.get(size=len(self.spore_man.spores)))
-        self.storage.res[21] += r21_gaithered_by_spores
+        self._update_resource_amount_with_limit(resource_type=21, addition=r21_gaithered_by_spores)
 
     def calculate_all_income(self):
         """Calculate income of each types of resources and update to colony storage."""

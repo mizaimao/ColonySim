@@ -19,7 +19,12 @@ class Storage(ABC):
 
 @dataclass
 class ColonyStorage(Storage):
-    pass
+    resource_limits: Optional[Dict[int, int]] = field(default_factory=lambda: {
+        11: 2000,
+        21: 500,
+        22: 250,
+        23: 250
+    })
 
 @dataclass
 class SporeStorage(Storage):
