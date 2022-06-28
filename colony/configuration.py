@@ -96,6 +96,7 @@ class ResSetup:
 
     starting_res: Dict[int, int] = field(default_factory=lambda: {})
     income_speed: Dict[int, List[int]] = field(default_factory=lambda: {})
+    building_costs: Dict[int, Dict[int, int]]= field(default_factory=lambda: {})
     
 
 res_cfg = ResSetup(

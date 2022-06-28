@@ -10,6 +10,7 @@ from colony.characters.storage import SporeStorage
 from colony.progression.step import *
 from colony.utils.info_manager import InfoManager
 
+STEP_INTERVAL: int = 10
 
 @dataclass
 class ColonyGeneralInfo:
@@ -94,16 +95,17 @@ class Colony:
         Differences are this function computes the current step, while "progress_a_step" projects
         the next iteration.
         """
-        # calculate resource
-        self.res_man.progress_res_step()
-        # calculate building
-        self.building_man.progress_building_step()
-        # calculate spore health
-        health_list: List[float] = self.spore_man.calculate_spore_health()
-        # calculate happiness and expand colony if available
-        expansion_ready: bool = self.happiness_man.update(health_list)
-        if expansion_ready:
-            self.spore_man.expand_if_available()
+        if self.current_iteration % STEP_INTERVAL == 0:
+            # calculate resource
+            self.res_man.progress_res_step()
+            # calculate building
+            self.building_man.progress_building_step()
+            # calculate spore health
+            health_list: List[float] = self.spore_man.calculate_spore_health()
+            # calculate happiness and expand colony if available
+            expansion_ready: bool = self.happiness_man.update(health_list)
+            if expansion_ready:
+                self.spore_man.expand_if_available()
 
         # new pop happens before this statement
         spore_step: Dict[Tuple[int, int], List[int]] = self.spore_man.calculate_spore_movements()

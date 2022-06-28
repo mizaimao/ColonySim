@@ -22,6 +22,16 @@ CUST_LINE_THICKNESS: int = 2
 
 INFO_PANE_COLOR: int = 220
 
+FT_FONT_OVERRIDE: bool = True
+FT_FONT_NAME: str = "Arial.ttf"  # non-standard fonts may require file path
+
+
+class FontPutter:
+    def __init__(self, use_ft: bool = FT_FONT_OVERRIDE):
+        if use_ft:
+            self.putter: Callable = cv2.freetype
+        else:
+            self.putter = cv2.putText
 
 class StringPainter:
     """Adding text on the given frame."""
