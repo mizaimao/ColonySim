@@ -1,6 +1,8 @@
 """Building objects for colony."""
 from dataclasses import dataclass, field
-from typing import List, Dict, Tuple, Optional
+from typing import Any, List, Dict, Tuple, Optional
+
+import numpy as np
 
 from colony.utils.image_manager import ImageManager
 
@@ -28,22 +30,41 @@ class Building:
 class ColonyBuildingManager:
     """Manages building objects in a colony."""
 
-    def __init__(self, image_manager: ImageManager = None):
+    def __init__(self, combined_step: Dict[Tuple[int, int], Any], image_manager: ImageManager = None):
         self.buildings: Dict[int, Building] = {}
         self.building_id: int = 0,
         self.image_manager: ImageManager = image_manager
+        self.combined_step: Dict[Tuple[int, int], Any] = combined_step
+
+    def update_combined_step(self, combined_step: Dict[Tuple[int, int], Any]):
+        """Should be called at the end of each iteration, such that building manager can
+        get up-to-date information of current tile info."""
+        self.combined_step = combined_step
 
     def progress_building_step(self):
+        pass
+        
+
+    def add_building_non_image(self, building_id: int):
         pass
 
     def add_building(
         self,
-        id: int,
-        type: str,
+        type: int,
         loc: Tuple[int, int],
         tech: int = 0,
         orientation: int = None,
     ):
+        # check if this building can be added
+
+
+        # if can be built, then add it
+        # enumerate building id
+        new_building_id: int = self.building_id
+        self.building_id += 1
+
+        if self.image_manager is None:
+            self.add_building_non_image(building_id=new_building_id)
         if orientation is None:
             orientation = 0
 

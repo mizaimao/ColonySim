@@ -70,7 +70,9 @@ class Colony:
             init_pop
         )
         self.happiness_man: HappinessManager = HappinessManager(base=15.0)
-        self.building_man: ColonyBuildingManager = ColonyBuildingManager(image_manager=image_manager)
+        self.building_man: ColonyBuildingManager = ColonyBuildingManager(
+            combined_step=self.step, image_manager=image_manager
+        )
         self.res_man: ColonyResourceManager = ColonyResourceManager(
             self.spore_man,
             self.happiness_man,
@@ -139,6 +141,7 @@ class Colony:
             return False
 
         self.step = new_step
+        self.building_man.update_combined_step(self.step)
         self.current_iteration += 1
 
         return True
