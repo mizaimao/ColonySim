@@ -9,6 +9,7 @@ from colony.characters.spore import Spore, ColonySporeManager
 from colony.characters.storage import SporeStorage
 from colony.progression.step import *
 from colony.utils.info_manager import InfoManager
+from colony.utils.image_manager import ImageManager
 
 STEP_INTERVAL: int = 10
 
@@ -31,6 +32,7 @@ class Colony:
         viewer_width: int = 1440,
         viewer_height: int = 900,
         init_pop: int = 10,
+        image_manager: ImageManager = None,
         seed: int = 0,
         verbose: bool = True,
     ):
@@ -61,13 +63,14 @@ class Colony:
 
         # pointers to managers
         self.info: ColonyGeneralInfo = ColonyGeneralInfo()
+        self.image_manager: ImageManager = image_manager
         self.spore_man: ColonySporeManager = ColonySporeManager(
             self.width,
             self.height,
             init_pop
         )
         self.happiness_man: HappinessManager = HappinessManager(base=15.0)
-        self.building_man: ColonyBuildingManager = ColonyBuildingManager()
+        self.building_man: ColonyBuildingManager = ColonyBuildingManager(image_manager=image_manager)
         self.res_man: ColonyResourceManager = ColonyResourceManager(
             self.spore_man,
             self.happiness_man,

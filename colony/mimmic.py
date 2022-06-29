@@ -46,6 +46,12 @@ if __name__ == '__main__':
     #mode = 'dump'
     mode = 'autoplay'
 
+    # create image manager (image assets related)
+    image_manager: ImageManager = ImageManager(
+        set_name=DEFAULT_TILE_SET,
+        seed=SEED,
+    )
+
     # create a colony
     chicken_col = Colony(
         width=X,
@@ -53,13 +59,10 @@ if __name__ == '__main__':
         viewer_width=VX,
         viewer_height=VY,
         init_pop=INIT_POP,
-        seed=0,
+        image_manager=image_manager,
+        seed=SEED,
         verbose=(mode!='dump'))
     
-    image_manager: ImageManager = ImageManager(
-        set_name=DEFAULT_TILE_SET,
-        seed=SEED,
-    )
     # plotting object
     visualizer = StepVisulizer(colony=chicken_col, painter_style=PAINTER_STYLE, image_manager=image_manager)
     

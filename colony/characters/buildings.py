@@ -2,6 +2,8 @@
 from dataclasses import dataclass, field
 from typing import List, Dict, Tuple, Optional
 
+from colony.utils.image_manager import ImageManager
+
 TECH_CAP: int = 3
 
 
@@ -26,8 +28,10 @@ class Building:
 class ColonyBuildingManager:
     """Manages building objects in a colony."""
 
-    def __init__(self):
+    def __init__(self, image_manager: ImageManager = None):
         self.buildings: Dict[int, Building] = {}
+        self.building_id: int = 0,
+        self.image_manager: ImageManager = image_manager
 
     def progress_building_step(self):
         pass
@@ -40,7 +44,6 @@ class ColonyBuildingManager:
         tech: int = 0,
         orientation: int = None,
     ):
-
         if orientation is None:
             orientation = 0
 
