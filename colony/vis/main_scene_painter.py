@@ -4,6 +4,7 @@ import numpy as np
 from typing import Callable, Dict, List, Tuple, Union
 
 from colony.characters.colony import Colony
+from colony.utils.image_manager import ImageManager
 from colony.vis.colony_viewers_basic import ColonyView, ColonyView2D
 from colony.vis.colony_viewers import ColonyViewIso, ColonyViewIsoImage
 
@@ -17,14 +18,21 @@ available_painters: Dict[str, ColonyView] = {
 }
 
 class MainScenePainter:
-    def __init__(self, style: str, colony: Colony, bitmap: np.ndarray, width: int, height: int):
+    def __init__(self, style: str, colony: Colony, bitmap: np.ndarray, width: int, height: int, image_manager: ImageManager):
         self.colony: Colony = colony
         self.bitmap: np.ndarray = bitmap
 
         # check and setup painter
         assert style in available_painters, f"{style} not supported."
         painter_class = available_painters[style]
-        self.painter = painter_class(self.colony.width, self.colony.height, width, height, self.bitmap)
+        self.painter = painter_class(
+            self.colony.width,
+            self.colony.height,
+            width,
+            height,
+            bitmap=self.bitmap,
+            image_manager=image_manager
+        )
 
         self.static_frame = self.painter.get_static_frame()
         self.painter.paint_playground()

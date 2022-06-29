@@ -3,6 +3,7 @@ import numpy as np
 
 from colony.configs.map_generator.ref import map_ref
 from colony.characters.colony import Colony
+from colony.utils.image_manager import ImageManager
 from colony.vis.curve_painter import CurvePainter
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 from colony.characters.storage import RES_MAPPING
@@ -18,7 +19,13 @@ class StepVisulizer:
     Visualize a single step in colony. Builds and merges multiple panes to form a unified viewer.
     """
 
-    def __init__(self, colony: Colony, painter_style: str, map_cfg: MapSetup = map_cfg):
+    def __init__(
+        self,
+        colony: Colony,
+        painter_style: str,
+        image_manager: ImageManager = None,
+        map_cfg: MapSetup = map_cfg,
+    ):
         """
         Args
             colony: pointer to a colony object saved in memory
@@ -41,7 +48,8 @@ class StepVisulizer:
             self.colony,
             self.bitmap,
             frame_width,
-            frame_height)
+            frame_height,
+            image_manager=image_manager)
          # colony info painter (lower left pane)
         self.info_pane_painter: InfoPanePainter = InfoPanePainter(
             width=left_info_pane_width,

@@ -32,7 +32,6 @@ class ImageManager:
         self, 
         set_name: str,
         seed: int = 720,
-        tile_width: int = 0,
         pre_sizing: Tuple[float, float, float] = [0.8, 2, 0.1]):
         """
         Args
@@ -42,18 +41,25 @@ class ImageManager:
             pre_sizing: Pre-caching resized tiles, format is (min, max, step), inclusively
                 and step is of 0.1. This may be buggy due to np.arange results.
         """
-        print("Loading assets...", end='')
         self.seed = seed
         self.rng = np.random.RandomState(seed)
+        self.set_name: str = set_name
+        self.tile_width: int = None
+        self.pre_sizing: Tuple[float, float, float] = pre_sizing
+
+    def prepare_tileset(self, tile_width: int = 0):
+        assert self.tile_width is None, "prepare_tileset(tile_width) function should be only executed once."
+        self.tile_width = tile_width
+        print("Loading assets...", end='')
         # image loader to read images from the disk
-        self.loader: ImageLoader = ImageLoader(**get_tileset_yaml(set_name))
+        self.loader: ImageLoader = ImageLoader(**get_tileset_yaml(self.set_name))
         # stores images in various resolutions; key mega tile width in px; 0 is raw size
         self.cache: Dict[int, Any] = {0: {}}
         # stores how many x and y mega pixels each image occupies
         self.sizes: Dict[str, List[Tuple(int, int)]] = {}
 
         self._unpack_raw_tileset()
-        self._prescale(tile_width, pre_sizing)
+        self._prescale(self.tile_width, self.pre_sizing)
         print('Done')
 
     def _unpack_raw_tileset(self):
@@ -120,6 +126,7 @@ class ImageManager:
             index: If an index was not given, then a random image from that tile_name will be
                 returned.
         """
+        assert self.tile_width is not None, "Run prepare_tileset(tile_width) first."
         if not width in self.cache:
             self.rescale_tile_set(width)
         
