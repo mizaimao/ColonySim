@@ -18,6 +18,7 @@ def shift_color(color: Tuple[int, ...], shift: Union[int, Tuple[int, ...]], shif
                 _new_color_0 = [c + shift for c in color[:-1]] + [color[-1]]
         else:
             raise ValueError("Color input must be of 3 or 4 channels.")
+
     _new_color_2: List[int] = []
     for c in _new_color_0:
         if c > 255:

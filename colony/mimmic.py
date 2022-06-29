@@ -7,7 +7,7 @@ import cv2
 
 from colony.characters.colony import Colony
 from colony.vis.step_visulizer import StepVisulizer
-from colony.configuration import world_cfg
+from colony.configuration import world_cfg, res_cfg
 
 
 target_folder: str = "/Users/frank/Projects/ColonySim/frames"
@@ -54,8 +54,7 @@ if __name__ == '__main__':
     single_frame = visualizer.plot_step() # returns an np.array
 
     if FAST_FORWARD > 0:
-        print(f"Fast forwarding to iteration {FAST_FORWARD}")
-        for _ in tqdm.tqdm(range(FAST_FORWARD)):
+        for _ in tqdm.tqdm(range(FAST_FORWARD), desc="Fastforwarding..."):
             chicken_col.progress_a_step()
 
     # manual progression by pressing a key

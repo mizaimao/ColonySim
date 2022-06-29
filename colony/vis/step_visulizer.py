@@ -5,9 +5,12 @@ from colony.configs.map_generator.ref import map_ref
 from colony.characters.colony import Colony
 from colony.vis.curve_painter import CurvePainter
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
+from colony.characters.storage import RES_MAPPING
 
 from colony.vis.main_scene_painter import MainScenePainter
 from colony.vis.string_painter import StringPainter, InfoPanePainter, add_info_to_main_pane
+
+INFO_STR_POS: int = 8  # width (number of digits) of info displaying string of resources
 
 
 class StepVisulizer:
@@ -58,17 +61,42 @@ class StepVisulizer:
         This mutates the input frame as a result of np.array manipulation.
         """
         frame = self.main_painter.paint_main_scence()
-        if with_info:
-            self.main_view_string_painter = add_info_to_main_pane(self.main_view_string_painter, self.colony, frame, steps=5, max_rows=20)
+
+        res11_info = "{}: {:5d}".format(RES_MAPPING[11], int(self.colony.res_man.storage.res[11]))
+        res21_info = "{}: {:5d}".format(RES_MAPPING[21], int(self.colony.res_man.storage.res[21]))
+        res22_info = "{}: {:5d}".format(RES_MAPPING[22], int(self.colony.res_man.storage.res[22]))
+        res23_info = "{}: {:5d}".format(RES_MAPPING[23], int(self.colony.res_man.storage.res[23]))
+        self.main_view_string_painter = add_info_to_main_pane(
+            self.main_view_string_painter,
+            self.colony,
+            frame,
+            steps=5,
+            max_rows=15,
+            text_width=80,
+            custom_lines=[
+                res11_info,
+                res21_info,
+                res22_info,
+                res23_info,
+            ]
+        )
+
+        # if with_info:
+        #     self.main_view_string_painter = add_info_to_main_pane(self.main_view_string_painter, self.colony, frame, steps=5, max_rows=20)
         return frame
 
     def paint_info_pane(self) -> np.ndarray:
         """Paint infomation pane, containing items like cycle count and population.
         """
-        colony_size_info = "Colony Size: {}".format(self.colony.current_pop)
+        colony_size_info = "Colony Size: {}/{}".format(
+            self.colony.spore_man.current_pop, self.colony.spore_man.pop_cap
+        )
         colony_cycle_info = "Iteration: {}".format(self.colony.current_iteration)
         # # add text info to pane
-        left_info = self.info_pane_painter.paint_lines([colony_size_info, colony_cycle_info])
+        left_info = self.info_pane_painter.paint_lines([
+            colony_size_info,
+            colony_cycle_info
+        ])
         return left_info
 
     def plot_step(self):

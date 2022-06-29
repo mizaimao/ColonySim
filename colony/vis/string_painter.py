@@ -16,8 +16,27 @@ INFO_COLOR: Tuple[int, ...] = (100, 100, 100, 0)
 INFO_THICKNESS: int = 1
 INFO_DECAY: int = 20
 
+CUST_LINE_COLOR: Tuple[int, ...] = (240, 240, 240, 0)
+CUST_LINE_FONT: int = cv2.FONT_HERSHEY_SIMPLEX
+CUST_LINE_THICKNESS: int = 2
+
 INFO_PANE_COLOR: int = 220
 
+FT_FONT_OVERRIDE: bool = True
+FT_FONT_NAME: str = "Arial.ttf"  # non-standard fonts may require file path
+
+
+class FontPutter:
+    """Wrapper for putText function in opencv with different backends."""
+    def __init__(self, use_ft: bool = FT_FONT_OVERRIDE):
+        if use_ft:
+            self.putter: Callable = cv2.freetype
+        else:
+            self.putter = cv2.putText
+    
+    def putText(self, **kwargs):
+        self.putter(**kwargs)
+        
 
 class StringPainter:
     """Adding text on the given frame."""
@@ -29,6 +48,7 @@ class StringPainter:
         font: int = POP_FONT,
         text_color: Tuple[int, ...] = POP_COLOR,
         text_thickness: int = POP_THICKNESS,
+        text_width: int = 30
     ):
         """
         Two lazy properties will be calculated when the first frame is parsed. Assuming the rest of frames
@@ -39,15 +59,15 @@ class StringPainter:
         self.font: int = font
         self.text_color: Tuple[int, ...] = text_color
         self.text_thickness: int = text_thickness
+        self.text_width: int = text_width
 
         # lazy properties
         self.font_scalar: float = None
         self.pixel_per_line: int = None
 
-    @staticmethod
-    def get_optimal_font_scale(width: int, text: str = None):
+    def get_optimal_font_scale(self, width: int, text: str = None):
         if not text:
-            text = " " * 30
+            text = " " * self.text_width
         for scale in range(59, -1, -1):
             textSize = cv2.getTextSize(
                 text,
@@ -141,6 +161,7 @@ class StringPainter:
         frame: np.ndarray,
         line_lists: List[List[str]],
         line_count_override: int,
+        color_override: Tuple[int, ...] = INFO_COLOR,
     ):
         """Paint strings to target frame. Contains multiple sets of lines. Each set will
         have a shallower color than the previous set.
@@ -151,7 +172,7 @@ class StringPainter:
         """
         if self.font_scalar is None:
             self.font_scalar = self.get_optimal_font_scale(
-                width=frame.shape[1], text=" " * 200
+                width=frame.shape[1], text=" " * self.text_width
             )
             line_count: int = line_count_override
             total_line_count: int = (
@@ -160,7 +181,7 @@ class StringPainter:
             self.pixel_per_line = int(frame.shape[0] / total_line_count)
 
         line_id: int = 1
-        color = INFO_COLOR
+        color = color_override
 
         for i, lines in enumerate(line_lists):
             line_id = self.paint_lines(
@@ -177,6 +198,8 @@ def add_info_to_main_pane(
     frame: np.ndarray,
     max_rows: int = 20,
     steps: int = 5,
+    text_width: int = 200,
+    custom_lines: List[str] = None,
 ):
     """Print game info to main pane (or any frame).
     Args
@@ -189,21 +212,36 @@ def add_info_to_main_pane(
         steps: most recent set of info strings will be shown in most heavy color, and
             the less recent ones will have shallower colors. This arg controls how far
             back we want to print info.
+        custom_lines: custom lines other than normal log info.
     """
     if painter is None:
+        if custom_lines is not None:
+            font: int = CUST_LINE_FONT
+            text_color: int = CUST_LINE_COLOR
+            thickness: int = CUST_LINE_THICKNESS
+        else:
+            font = INFO_FONT
+            text_color = INFO_COLOR
+            thickness = INFO_THICKNESS
+
         painter = StringPainter(
             front_spaces=1,
             line_spaces=1,
-            font=INFO_FONT,
-            text_color=INFO_COLOR,
-            text_thickness=INFO_THICKNESS,
+            font=font,
+            text_color=text_color,
+            text_thickness=thickness,
+            text_width=text_width,
         )
 
     assert (
         not colony.printer.info_stack
     ), "Colony info logger should be empty when printing strings to main frame."
-    line_lists = colony.printer.info_history[-steps:]  # last serveral steps
-    painter.paint_lines_decaying(frame, line_lists[::-1],line_count_override=max_rows)
+    if custom_lines is None:
+        line_lists = colony.printer.info_history[-steps:]  # print last serveral steps
+        painter.paint_lines_decaying(frame, line_lists[::-1], line_count_override=max_rows)
+    else:
+        painter.paint_lines_decaying(frame, [custom_lines], line_count_override=max_rows, color_override=CUST_LINE_COLOR)
+
 
     return painter
 

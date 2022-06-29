@@ -267,7 +267,7 @@ class ColonyViewIso(ColonyView):
                 ISO_TILE_OUTLINE_COLOR,
             )
 
-        # # draw underground left side
+        # draw underground left side
         if background and (x == 0):
             contours = np.array([ul, ll, ll, ul]) + [lower_shifter, lower_shifter, half_lower_shifter, half_lower_shifter]
             self.draw_filled_polygon(
@@ -348,8 +348,13 @@ class ColonyViewIsoImage(ColonyViewIso):
         # four original corners of each tile
         ul, ur, ll, lr = self._get_iso_coor_set(x, y)
 
+        # similar to half_upper_shifter in non-image mega pixel painting fucntion.
+        # the purpose for this shifter is that when mixing images and color tiles together,
+        # images will be shifted upward to compensate for tile thickness.
+        y_shifter: int = int(self.tile_upper_depth / 2)
+
         width: int = abs(ul[0] - lr[0])
-        replace_y: int = ll[1]
+        replace_y: int = ll[1] - y_shifter
         replace_x: int = ul[0]
 
         #overlay_image = self.imager.resize_image_by_width(image, width)

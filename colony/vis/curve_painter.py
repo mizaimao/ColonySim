@@ -16,6 +16,10 @@ DATA_POINT_LIMIT: int = 128  # lines to draw is DATA_POINTS - 1
 
 # stat type specific settings
 POP_CURVE_COLOR: Tuple[int, ...] = (97, 52, 107)
+FOOD_CURVE_COLOR: Tuple[int, ...] = (60, 30, 159)
+RES_21_CURVE_COLOR: Tuple[int, ...] = (73, 116, 164)
+RES_22_CURVE_COLOR: Tuple[int, ...] = (141, 140, 136)
+RES_23_CURVE_COLOR: Tuple[int, ...] = (206, 204, 202)
 
 
 @dataclass
@@ -24,7 +28,7 @@ class StatTracker:
     A simple dataclass holding historical high values, and certain number of datapoints.
     """
 
-    prev_high: int = 0
+    prev_high: int = 1
     data: List[int] = field(default_factory=lambda: [])  # queue
     color: Tuple[int, ...] = UNASSIGNED_CURVE_COLOR
     thickness: int = CURVE_THICKNESS
@@ -45,9 +49,15 @@ class CurvePainter:
         self.line_spacing: float = self.width / (DATA_POINT_LIMIT - 1)
 
         self.population_tracker: StatTracker = StatTracker(color=POP_CURVE_COLOR)
+        self.food_tracker: StatTracker = StatTracker(color=FOOD_CURVE_COLOR)
+        self.res_21_tracker: StatTracker = StatTracker(color=RES_21_CURVE_COLOR)
+        self.res_22_tracker: StatTracker = StatTracker(color=RES_22_CURVE_COLOR)
+        self.res_23_tracker: StatTracker = StatTracker(color=RES_23_CURVE_COLOR)
+
 
     def normalized_height(self, value: float, tracker: StatTracker) -> int:
         """Get normalized value compared with record high."""
+
         return int(value / tracker.prev_high * self.plottable_height)
 
     def plot_curve_with_updated_point(
@@ -89,7 +99,12 @@ class CurvePainter:
     def draw_colony_curves(self, colony: Colony) -> np.ndarray:
         """Draw a series of curves by reading the current status from a colony instance."""
         # read values from colony instance
-        population: int = colony.current_pop
+        population: int = colony.spore_man.current_pop
+
+        food: int = colony.res_man.storage.res[11]
+        res_21: int = colony.res_man.storage.res[21]
+        res_22: int = colony.res_man.storage.res[22]
+        res_23: int = colony.res_man.storage.res[23]
 
         # build a blank array to draw curves on
         frame = np.full((self.height, self.width, 3), POP_PANE_COLOR, dtype=np.uint8)
@@ -97,6 +112,18 @@ class CurvePainter:
         # add curves
         self.plot_curve_with_updated_point(
             frame, point=population, tracker=self.population_tracker
+        )
+        self.plot_curve_with_updated_point(
+            frame, point=food, tracker=self.food_tracker
+        )
+        self.plot_curve_with_updated_point(
+            frame, point=res_21, tracker=self.res_21_tracker
+        )
+        self.plot_curve_with_updated_point(
+            frame, point=res_22, tracker=self.res_22_tracker
+        )
+        self.plot_curve_with_updated_point(
+            frame, point=res_23, tracker=self.res_23_tracker
         )
 
         return frame

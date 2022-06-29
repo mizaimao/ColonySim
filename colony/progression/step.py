@@ -1,5 +1,5 @@
 import numpy as np
-from colony.characters.spore import Spore
+#from colony.characters.spore import Spore
 
 from colony.configuration import spore_cfg
 
@@ -31,12 +31,19 @@ def spore_step(direction: int, current_coor: tuple):
         raise NotImplementedError("Unknown direction", direction)
 
 
-def validate_coor(x_low: int, x_high: int, y_low: int, y_high: int, coor: tuple):
+def validate_coor(
+        x_low: int,
+        x_high: int,
+        y_low: int,
+        y_high: int,
+        coor: tuple,
+        step: dict
+    ):
     """
     To verify if the generated coor are inside map
     """
     x, y = coor
-    if x_low <= x < x_high and y_low <= y < y_high:
+    if x_low <= x < x_high and y_low <= y < y_high and ((x, y) not in step):
         return True
     return False 
 
@@ -63,41 +70,41 @@ def determine_event(sex_a: int, sex_b: int):
     return 0
 
 
-def event_handler(a: Spore, b: Spore):
-    """
-    Generate event result of two spores.
+# def event_handler(a: Spore, b: Spore):
+#     """
+#     Generate event result of two spores.
 
-    Args:
-        a, b {Spore} -- two interactive spores 
+#     Args:
+#         a, b {Spore} -- two interactive spores 
 
-    Returns:
-        [bool, bool] -- if the two spores survive
-        int -- number of newborns
-    """
-    event_code = determine_event(a.sex, b.sex)
-    if event_code == 0:
-        return [True, True], 0
+#     Returns:
+#         [bool, bool] -- if the two spores survive
+#         int -- number of newborns
+#     """
+#     event_code = determine_event(a.sex, b.sex)
+#     if event_code == 0:
+#         return [True, True], 0
 
-    elif event_code == 1: # fight
-        fatality = spore_cfg.duel_fatality
-        probs = np.random.random(2)
-        a_survives = True
-        b_survices = True 
-        if probs[0] <= fatality: # fatal fight
-            a_survives = False
-        if probs[1] < fatality: # a dies
-            b_survices = False 
-        return [a_survives, b_survices], 0
+#     elif event_code == 1: # fight
+#         fatality = spore_cfg.duel_fatality
+#         probs = np.random.random(2)
+#         a_survives = True
+#         b_survices = True 
+#         if probs[0] <= fatality: # fatal fight
+#             a_survives = False
+#         if probs[1] < fatality: # a dies
+#             b_survices = False 
+#         return [a_survives, b_survices], 0
         
-    elif event_code == 2: # proliforate 
-        probs = np.random.random()
-        new_born = 0
-        if probs <= spore_cfg.one_night_chance:
-            new_born += 1
-        return [True, True], new_born
+#     elif event_code == 2: # proliforate 
+#         probs = np.random.random()
+#         new_born = 0
+#         if probs <= spore_cfg.one_night_chance:
+#             new_born += 1
+#         return [True, True], new_born
 
-    else:
-        raise NotImplementedError()
+#     else:
+#         raise NotImplementedError()
 
 
 def get_direction(size: int = 1):
@@ -107,13 +114,13 @@ def get_direction(size: int = 1):
     return np.random.randint(low=0, high=9, size=size)
 
 
-def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: int):
+def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: int, step: dict):
     """
-    Generate the coor of the next step. Only returns valid coor
+    Generate the coor of the next step. Only returns valid coor.
     """
     while True: # do-while loop in python
         new_coor = spore_step(direction = next_direction, current_coor = current_coor)
-        if validate_coor(0, width, 0, height, new_coor):
+        if validate_coor(0, width, 0, height, new_coor, step):
             break
         next_direction = get_direction(size=1)
     return new_coor
