@@ -129,12 +129,16 @@ class ColonyResourceManager:
         eventual_food: float = self.storage.res[11]
         self._update_resource_amount_with_limit(resource_type=11, addition=eventual_food-original_food)
 
+    def get_current_res_cap(self, resource_type: int):
+        """Get current resource caps. Need to consider initial cap plus amount extended by buildings."""
+        return self.storage.resource_limits[resource_type]
+
     def _update_resource_amount_with_limit(self, resource_type: int, addition: float):
         """When a certain type of resource to be added to storage, it's possible that the storage is already full and
         cannot procees. This function compares the current resource value and addition, and decide the final amount.
         """
         current_res_value: float = self.storage.res[resource_type]
-        current_res_limit: float = self.storage.resource_limits[resource_type]
+        current_res_limit: float = self.get_current_res_cap(resource_type=resource_type)
         # if currently this type exceeds storage limit, then no update
         if current_res_value >= current_res_limit:
             pass
