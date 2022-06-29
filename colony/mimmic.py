@@ -25,6 +25,10 @@ VX = world_cfg.viewer_width
 VY = world_cfg.viewer_height
 INIT_POP = world_cfg.initial_population
 
+PAINTER_STYLE: str = "isometric_image"
+#PAINTER_STYLE: str = "isometric"
+#PAINTER_STYLE = "2D"
+
 
 if __name__ == '__main__':
     try:
@@ -48,7 +52,7 @@ if __name__ == '__main__':
         seed=0,
         verbose=(mode!='dump'))
     # plotting object
-    visualizer = StepVisulizer(colony=chicken_col)
+    visualizer = StepVisulizer(colony=chicken_col, painter_style=PAINTER_STYLE)
     
     cycle_counter = -1
     single_frame = visualizer.plot_step() # returns an np.array

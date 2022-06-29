@@ -18,7 +18,7 @@ class StepVisulizer:
     Visualize a single step in colony. Builds and merges multiple panes to form a unified viewer.
     """
 
-    def __init__(self, colony: Colony, map_cfg: MapSetup = map_cfg):
+    def __init__(self, colony: Colony, painter_style: str, map_cfg: MapSetup = map_cfg):
         """
         Args
             colony: pointer to a colony object saved in memory
@@ -34,10 +34,6 @@ class StepVisulizer:
         info_pane_height: int = int(frame_height * 0.2)  # shared by two lower panes
         left_info_pane_width: int = int(frame_width / 2)
         right_info_pane_width: int = frame_width - left_info_pane_width
-
-        painter_style: str = "isometric_image"
-        #painter_style: str = "isometric"
-        #painter_style = "2D"
 
         # setup painters (three panes)
         self.main_painter = MainScenePainter(  # main view (upper pane)

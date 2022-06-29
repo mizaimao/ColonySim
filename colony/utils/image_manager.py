@@ -17,6 +17,7 @@ PRESIZING_STEP: float = 0.1
 
 
 def get_tileset_yaml(set_name: str):
+    """Load yaml specifing image asset set info, including path, orientations, etc."""
     assert set_name in AVAILABLE_TILESETS, f"{set_name} not available."
     yaml_path = ASSET_FOLDER.joinpath(AVAILABLE_TILESETS[set_name] + '.yaml')
     return yaml.safe_load(open(yaml_path))

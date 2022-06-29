@@ -291,15 +291,26 @@ class ColonyViewIso(ColonyView):
 class ColonyViewIsoImage(ColonyViewIso):
     """Extends the basic isometric viewer to support image overlaying.
     """
-    def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap, seed: int = 720):
+    def __init__(self,
+        width: int,
+        height: int,
+        frame_width: int,
+        frame_height: int,
+        bitmap: np.ndarray,
+        image_manager: ImageManager = None,
+        seed: int = 720
+    ):
         """New attributes would be cached images or values will that will be repetitively calculated.
         """
         super().__init__(width, height, frame_width, frame_height, bitmap)
-
-        self.imager: ImageManager = ImageManager(
-            set_name=DEFAULT_TILE_SET,
-            seed=seed,
-            tile_width=self.get_tile_width())
+        if image_manager is None:
+            print("Image manager not parsed, using default.")
+            self.imager: ImageManager = ImageManager(
+                set_name=DEFAULT_TILE_SET,
+                seed=seed,
+                tile_width=self.get_tile_width())
+        else:
+            self.imager = image_manager
         self.rng = np.random.RandomState(seed)
 
         
