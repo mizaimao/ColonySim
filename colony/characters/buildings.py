@@ -35,7 +35,8 @@ class ColonyBuildingManager:
         width: int,
         height: int,
         combined_step: Dict[Tuple[int, int], Any],
-        image_manager: ImageManager = None
+        image_manager: ImageManager = None,
+        seed: int = 720,
     ):
         # width and height to calculate random locations
         self.width: int = width
@@ -51,6 +52,8 @@ class ColonyBuildingManager:
         self.building_id: int = 0,
         # colony building locations
         self.building_step: Dict[Tuple[int, int], Building] = {}
+        # rng for random locations, orientations, etc.
+        self.rng = np.random.RandomState(seed)
 
     def update_combined_step(self, combined_step: Dict[Tuple[int, int], Any]):
         """Should be called at the end of each iteration, such that building manager can
