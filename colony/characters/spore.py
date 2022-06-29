@@ -4,6 +4,7 @@ from typing import Dict, Tuple, List, Optional
 
 from colony.configuration import res_cfg
 from colony.characters.storage import SporeStorage
+from colony.characters.terrain import TerrainManager
 from colony.utils.batch_random import BatchNormal, BatchUniform
 from colony.progression.step import get_direction, get_next_coor
 
@@ -30,10 +31,10 @@ class Spore:
 class ColonySporeManager:
     """Manages all spores in a colony.
     """
-    def __init__(self, width: int, height: int, init_pop: int, pop_cap: int = INITIAL_POPCAP, seed: int = 720):
+    def __init__(self, init_pop: int, terrain_man: TerrainManager, pop_cap: int = INITIAL_POPCAP, seed: int = 720):
+        self.terrain_man: TerrainManager = terrain_man
         # size of colony
-        self.width: int = width
-        self.height: int = height
+        self.height, self.width = self.terrain_man.bitmap.shape
         # poplulation cap
         self.pop_cap: int = pop_cap
 

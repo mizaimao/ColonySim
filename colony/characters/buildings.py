@@ -5,6 +5,7 @@ from typing import Any, List, Dict, Tuple, Optional
 import numpy as np
 
 from colony.utils.image_manager import ImageManager
+from colony.characters.terrain import TerrainManager
 
 TECH_CAP: int = 3
 
@@ -32,15 +33,14 @@ class ColonyBuildingManager:
 
     def __init__(
         self,
-        width: int,
-        height: int,
+        terrain_man: TerrainManager,
         combined_step: Dict[Tuple[int, int], Any],
         image_manager: ImageManager = None,
         seed: int = 720,
     ):
+        self.terrain_man: TerrainManager = terrain_man
         # width and height to calculate random locations
-        self.width: int = width
-        self.heigh: int = height
+        self.height, self.width = self.terrain_man.bitmap.shape
         # imager to retrive building orientation information
         self.image_manager: ImageManager = image_manager
         # colony spore locations

@@ -35,12 +35,6 @@ SEED: int = 720
 
 
 if __name__ == '__main__':
-    try:
-        x = int(sys.argv[1])
-        y = int(sys.argv[2])
-    except:
-        x = X
-        y = Y
 
     mode = 'interactive'
     #mode = 'dump'
@@ -54,8 +48,6 @@ if __name__ == '__main__':
 
     # create a colony
     chicken_col = Colony(
-        width=X,
-        height=Y,
         viewer_width=VX,
         viewer_height=VY,
         init_pop=INIT_POP,

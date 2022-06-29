@@ -26,8 +26,8 @@ class MainScenePainter:
         assert style in available_painters, f"{style} not supported."
         painter_class = available_painters[style]
         self.painter = painter_class(
-            self.colony.width,
-            self.colony.height,
+            self.colony.terrain_man.width,
+            self.colony.terrain_man.height,
             width,
             height,
             bitmap=self.bitmap,

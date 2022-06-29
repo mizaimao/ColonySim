@@ -5,9 +5,9 @@ from typing import Any, Dict, Tuple, List
 
 from colony.characters.colony_stats import HappinessManager, ColonyResourceManager
 from colony.characters.buildings import ColonyBuildingManager
+from colony.characters.terrain import TerrainManager
 from colony.characters.spore import Spore, ColonySporeManager
 from colony.characters.storage import SporeStorage
-from colony.progression.step import *
 from colony.utils.info_manager import InfoManager
 from colony.utils.image_manager import ImageManager
 
@@ -27,8 +27,6 @@ class Colony:
 
     def __init__(
         self,
-        width: int = 32,
-        height: int = 16,
         viewer_width: int = 1440,
         viewer_height: int = 900,
         init_pop: int = 10,
@@ -47,8 +45,6 @@ class Colony:
             verbose: if true, printing functions in InfoManager will be suppressed
         """
         # settings
-        self.width: int = width
-        self.height: int = height
         self.viewer_width: int = viewer_width
         self.viewer_height: int = viewer_height
         self.enable_history: bool = False
@@ -61,17 +57,18 @@ class Colony:
         # progress variables
         self.tech_stage: int = 0
 
-        # pointers to managers
+        # pointers to terrain manager
+        self.terrain_man: TerrainManager = TerrainManager()
+
+        # pointers to other managers
         self.info: ColonyGeneralInfo = ColonyGeneralInfo()
         self.image_manager: ImageManager = image_manager
         self.spore_man: ColonySporeManager = ColonySporeManager(
-            self.width,
-            self.height,
-            init_pop
+            init_pop=init_pop, terrain_man=self.terrain_man
         )
         self.happiness_man: HappinessManager = HappinessManager(base=15.0)
         self.building_man: ColonyBuildingManager = ColonyBuildingManager(
-            self.width, self.height, combined_step=self.step, image_manager=image_manager, seed=seed
+            terrain_man=self.terrain_man, combined_step=self.step, image_manager=image_manager, seed=seed
         )
         self.res_man: ColonyResourceManager = ColonyResourceManager(
             self.spore_man,
