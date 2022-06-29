@@ -34,6 +34,8 @@ class ImageManager:
         seed: int = 720,
         pre_sizing: Tuple[float, float, float] = [0.8, 2, 0.1]):
         """
+        The 
+
         Args
             set_name: Short name of tileset so that it can load assets from disk. 
             seed: Controls random choosing operations (like random orientation of a tile).
@@ -46,6 +48,13 @@ class ImageManager:
         self.set_name: str = set_name
         self.tile_width: int = None
         self.pre_sizing: Tuple[float, float, float] = pre_sizing
+        # stores images in various resolutions; key mega tile width in px; 0 is raw size
+        # other zooming levels will be saved to different keys.
+        self.cache: Dict[int, Any] = {0: {}}
+        # stores how many x and y mega pixels each image occupies
+        self.sizes: Dict[int, List[Tuple(int, int)]] = {}
+        # stores names of buildings
+        self.building_names: Dict[int, str] = {}
 
     def prepare_tileset(self, tile_width: int = 0):
         assert self.tile_width is None, "prepare_tileset(tile_width) function should be only executed once."
@@ -53,11 +62,6 @@ class ImageManager:
         print("Loading assets...", end='')
         # image loader to read images from the disk
         self.loader: ImageLoader = ImageLoader(**get_tileset_yaml(self.set_name))
-        # stores images in various resolutions; key mega tile width in px; 0 is raw size
-        self.cache: Dict[int, Any] = {0: {}}
-        # stores how many x and y mega pixels each image occupies
-        self.sizes: Dict[str, List[Tuple(int, int)]] = {}
-
         self._unpack_raw_tileset()
         self._prescale(self.tile_width, self.pre_sizing)
         print('Done')
@@ -68,8 +72,10 @@ class ImageManager:
         for tile_name, tile_dict in raw_image_set.items():
             sizes: List[Tuple[int, int]] = tile_dict["sizes"]
             images: List[Tuple[int, int]] = tile_dict["images"]
+            building_name: str = tile_dict["name"]
             self.sizes[tile_name] = sizes
             self.cache[0][tile_name] = images
+            self.building_names[tile_name] = building_name
 
     def _prescale(self, tile_width: int, re_sizing: Tuple[float, float, float]):
         if tile_width <= 0:
@@ -117,22 +123,34 @@ class ImageManager:
                 resized.append(ImageManager.resize_image_by_width(image, new_width))
             self.cache[target_width][tile_code] = resized
 
-    def get_tile_image(self, tile_name: str, width: int, index: int = None):
-        """Get a tile image by tile_name.
+    def get_tile_orientation(self, building_type: int, orientation: int = None):
+        """Get tile oirentation. If an orientation is parsed, then check if this orientation is
+        available; otherwise, return a random orientation.
+        """
+        available_orientations: List[Tuple[int, int]] = self.sizes[building_type]
+        assert available_orientations, f"Loader error, no orientation was loadded for {building_type}."
+        chosen_orientation: int = orientation if (orientation is not None) else \
+            self.rng.choice(len(available_orientations))
+        assert chosen_orientation < len(available_orientations), "Orientation index out of range."
+        size: Tuple[int, int] = available_orientations[chosen_orientation]
+        return size
+            
+    def get_tile_image(self, building_type: int, width: int, index: int = None):
+        """Get a tile image by building_type.
         Args
-            tile_name: Name of tile.
+            building_type: Name of tile.
             width: On-screen pixel width of each mega pixel. The function will then return the
                 image resized with this width (or generate it first if not cached).
-            index: If an index was not given, then a random image from that tile_name will be
+            index: If an index was not given, then a random image from that building_type will be
                 returned.
         """
         assert self.tile_width is not None, "Run prepare_tileset(tile_width) first."
         if not width in self.cache:
             self.rescale_tile_set(width)
         
-        tile_images: List[np.ndarray] = self.cache[width][tile_name]
+        tile_images: List[np.ndarray] = self.cache[width][building_type]
         image_index: int = index if (index is not None) else self.rng.choice(len(tile_images))
         image_array: np.ndarray = tile_images[image_index]
-        image_size: Tuple[int, int] = self.sizes[tile_name][image_index]
+        image_size: Tuple[int, int] = self.sizes[building_type][image_index]
 
         return image_array, image_size

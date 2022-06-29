@@ -47,7 +47,7 @@ class ImageLoader:
             self.surface[k] = [Path(p) for p in v]
         
     @staticmethod
-    def unpack_path_size_type(prop_set: Dict[str, Any]) -> Tuple[Path, List[Tuple[int]]]:
+    def unpack_path_size_type(prop_set: Dict[str, Any]) -> Tuple[Path, List[Tuple[int]], int]:
         """Unpack image path, sub-image orientation and sizes
         from yaml parser to usable format.
         """

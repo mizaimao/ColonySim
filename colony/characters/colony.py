@@ -71,7 +71,7 @@ class Colony:
         )
         self.happiness_man: HappinessManager = HappinessManager(base=15.0)
         self.building_man: ColonyBuildingManager = ColonyBuildingManager(
-            combined_step=self.step, image_manager=image_manager
+            self.width, self.height, combined_step=self.step, image_manager=image_manager
         )
         self.res_man: ColonyResourceManager = ColonyResourceManager(
             self.spore_man,
