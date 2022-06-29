@@ -106,16 +106,16 @@ class ImageManager:
         assert isinstance(target_width, int), f"Use int as width to resize tileset, not {type(target_width)}"
         
         # setup new scaling dict
-        self.cache[target_width] = {}  # Dict[str, List[np.ndarray]]
+        self.cache[target_width] = {}  # Dict[int, List[np.ndarray]]
         # unpack raw image set
-        for tile_name, org_images in self.cache[0].items():  # None is key for raw set
+        for tile_code, org_images in self.cache[0].items():  # 0 is key for raw set
             # resize each original tile image
             resized: List[np.ndarray] = []
-            sizes = self.sizes[tile_name]
+            sizes = self.sizes[tile_code]
             for image, size in zip(org_images, sizes):
                 new_width: int = int(target_width * (1 + (max(size) - 1) * 0.5))
                 resized.append(ImageManager.resize_image_by_width(image, new_width))
-            self.cache[target_width][tile_name] = resized
+            self.cache[target_width][tile_code] = resized
 
     def get_tile_image(self, tile_name: str, width: int, index: int = None):
         """Get a tile image by tile_name.
