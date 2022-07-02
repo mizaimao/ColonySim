@@ -237,6 +237,7 @@ class ColonyViewIso(ColonyView):
         Tile outline applies only to player/mimic/whatever-individual tiles, not backgrounds tiles.
         Some lines are overlapping. So different sides will have different number of line drawing statements.
         """
+        outline_color = ISO_TILE_OUTLINE_COLOR if outline else None
         upper_shifter: Tuple[int, int] = (0, int(self.tile_upper_depth))
         half_upper_shifter: Tuple[int, int] = (0, int(self.tile_upper_depth / 2))
 
@@ -254,7 +255,7 @@ class ColonyViewIso(ColonyView):
 
         # draw surface of a tile      ??? why a positive number causing it shift below ???
         contours: np.ndarray = np.array([ul, ll, lr, ur]) - upper_shifter
-        self.draw_filled_polygon(frame, contours, color, ISO_TILE_OUTLINE_COLOR)
+        self.draw_filled_polygon(frame, contours, color, outline_color)
 
         # draw elevated left side
         if (not background) or (x == 0):
@@ -263,7 +264,7 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
         # draw elevated right side
@@ -273,7 +274,7 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(color, ISO_TILE_UPPER_RIGHT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
         # draw underground left side
@@ -283,7 +284,7 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
         # draw underground right side
@@ -293,7 +294,7 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(DIRT_COLOR, ISO_TILE_UPPER_RIGHT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
 
@@ -319,7 +320,9 @@ class ColonyViewIsoImage(ColonyViewIso):
             )
         else:
             self.imager = image_manager
-        self.imager.prepare_tileset(self.get_tile_width())
+        # save current tile width and update when zoom level changes
+        self.tile_width: int = self.get_tile_width()
+        self.imager.prepare_tileset(self.tile_width)
 
         
     def get_tile_width(self):
