@@ -1,6 +1,10 @@
 """Reference of numbers in map bitmap and definition.
 """
-from typing import Dict, Tuple
+from telnetlib import SE
+from typing import Dict, Set, Tuple
+
+# buildale tiles
+BUILDABLE: Set[int] = {101, }
 
 # NOTE: color codes are in RGB
 map_ref: Dict[int, Tuple] = {

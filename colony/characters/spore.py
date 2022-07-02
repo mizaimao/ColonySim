@@ -23,9 +23,13 @@ class Spore:
     age: int
     health: int
 
+    # personal storage
     storage: SporeStorage
-
+    # max health
     health_cap: Optional[int] = HEALTH_CAP
+    # on-going route, if empty, it will go randomly one of 9 directions
+    # (including staying at the same position)
+    current_path: Optional[List[Tuple[int, int]]] = None
 
 
 class ColonySporeManager:
