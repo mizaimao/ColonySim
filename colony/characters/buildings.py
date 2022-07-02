@@ -2,7 +2,6 @@
 from curses import termattrs
 from dataclasses import dataclass, field
 from distutils.command.build import build
-from tkinter import BitmapImage
 from typing import Any, List, Dict, Set, Tuple, Optional
 
 import numpy as np
@@ -32,6 +31,7 @@ class Building:
     tech_level: int
     location: Tuple[int, int]
     orientation: Optional[int] = 0
+    size: Optional[Tuple[int, int]] = field(default_factory=lambda: (1, 1))
 
 
 class ColonyBuildingManager:
@@ -55,13 +55,15 @@ class ColonyBuildingManager:
         # building tracking dictionary
         self.buildings: Dict[int, Building] = {}
         # unique building ids
-        self.building_id: int = 0,
+        self.building_id: int = (0,)
         # colony building locations
         self.building_step: Dict[Tuple[int, int], Building] = {}
         # rng for random locations, orientations, etc.
         self.rng: np.random.RandomState = np.random.RandomState(seed)
         # random location builder, refactored part from this class
-        self.finder: LocationFinder = LocationFinder(terrain_man=terrain_man,rng=self.rng)
+        self.finder: LocationFinder = LocationFinder(
+            terrain_man=terrain_man, rng=self.rng
+        )
 
     def update_combined_step(self, combined_step: Dict[Tuple[int, int], Any]):
         """Should be called at the end of each iteration, such that building manager can
@@ -70,37 +72,38 @@ class ColonyBuildingManager:
 
     def progress_building_step(self):
         pass
-        
 
     def add_building_non_image(self, building_type: int):
         pass
 
-    
     def check_building_is_buildable(
-            self,
-            type: int,
-            loc: Tuple[int, int] = None,
-            tech: int = 0,
-            orientation: int = None,
-        ) -> bool:
+        self,
+        type: int,
+        loc: Tuple[int, int] = None,
+        tech: int = 0,
+        orientation: int = None,
+    ) -> int:
         """
         Do checks and build the building if we can. We check resources first because
         that's computationally cheaper than physical checks. Note that resource check
         should already been done by the caller and will not be performed here.
-        1. Resource checks: if storage can support such a building. This should 
-        2. Physical checks: if given location and orientation will have free tiles;
-        If checks passed, then build it and deduct resources from colony.
+            1. Resource checks: if storage can support such a building. This should
+            2. Physical checks: if given location and orientation will have free tiles;
+        If checks passed, then add the building to building manager. Resource is not
+        deducted in this step and should be performed elsewhere.
         """
         if orientation is not None:
-            assert orientation >= 0, "Orientation should be a non-negative integer; or \
+            assert (
+                orientation >= 0
+            ), "Orientation should be a non-negative integer; or \
                 None for a random orientation."
-
+        avail_ori: List[Tuple[int, int]] = self.image_manager.sizes[type]
         # do physical checks
         buildable_loc, buildbale_ort = self.finder.perform_building_physical_checks(
-            loc=loc, orientation=orientation, avail_ori=self.image_manager.sizes[type]
+            loc=loc, orientation=orientation, avail_ori=avail_ori
         )
         if (buildable_loc is None) or (buildbale_ort == -1):
-            return False
+            return -1  # invalid building id, meaning not buildable
 
         # flow reaches here if both checks passed, therefore we build it
         # enumerate building id
@@ -113,14 +116,18 @@ class ColonyBuildingManager:
             orientation = 0
 
         new_building: Building = Building(
-            id=id, type=type, location=buildable_loc, tech=tech, orientation=buildbale_ort
+            id=new_building_id,
+            type=type,
+            location=buildable_loc,
+            tech=tech,
+            orientation=buildbale_ort,
+            size=avail_ori[buildbale_ort],
         )
-        self.buildings[id] = new_building
-        return True
+        self.buildings[new_building_id] = new_building
+        return new_building_id
 
     def relocate_building(self, id: int) -> bool:
-        """Relocate building with given id to a new place. Returns if it will be successful.
-        """
+        """Relocate building with given id to a new place. Returns if it will be successful."""
         pass
 
     def upgrade_building(self, id: int) -> bool:
