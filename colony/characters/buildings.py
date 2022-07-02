@@ -4,7 +4,6 @@ from dataclasses import dataclass, field
 from distutils.command.build import build
 from tkinter import BitmapImage
 from typing import Any, List, Dict, Set, Tuple, Optional
-from matplotlib.style import available
 
 import numpy as np
 
@@ -77,7 +76,7 @@ class ColonyBuildingManager:
         pass
 
     
-    def add_building(
+    def check_building_is_buildable(
             self,
             type: int,
             loc: Tuple[int, int] = None,
@@ -86,62 +85,24 @@ class ColonyBuildingManager:
         ) -> bool:
         """
         Do checks and build the building if we can. We check resources first because
-        that's computationally cheaper than physical checks.
-        1. Resource checks: if storage can support such a building.
+        that's computationally cheaper than physical checks. Note that resource check
+        should already been done by the caller and will not be performed here.
+        1. Resource checks: if storage can support such a building. This should 
         2. Physical checks: if given location and orientation will have free tiles;
         If checks passed, then build it and deduct resources from colony.
-
-        There are cases when location or orientation not specified:
-        1. If neither were given, then chose a random location and random orientation.
-        2. If only location was given, then check all possible orientations and
-            randomly select one.
-        3. If only orientation was given, then choose a random location (or keep trying
-            until all tiles are exhauseted)
         """
         if orientation is not None:
             assert orientation >= 0, "Orientation should be a non-negative integer; or \
                 None for a random orientation."
 
-        # do resource/financial checks
-        required_res: Dict[int, int] = res_cfg[type][tech]
-        
-
-
-        # resource check passed, and check locations
-        # get list of available orientations:
-        avail_ori: List[Tuple[int, int]] = self.image_manager.sizes[type]
-
-        # two key variables for building
-        buildable_loc: Tuple[int, int] = None
-        buildbale_ort: int = -1  # -1 for invalid
-
-        # case 0: when both loc and orientation are given
-        if (loc is not None) and (orientation is not None):
-            if self.finder.validate_loc_and_ori(loc, avail_ori[orientation]):
-                buildable_loc = loc
-                buildbale_ort = avail_ori[orientation]
-        # case 1: neither were given
-        elif loc is None:
-            if orientation is None:
-                buildable_loc, buildbale_ort = \
-                    self.finder.build_with_random_loc_and_random_ori(avail_ori=avail_ori)
-            # case 3: only orientation was given
-            else:
-                buildable_loc = \
-                    self.finder.build_with_random_loc_and_given_ori(size=avail_ori[orientation])
-                buildbale_ort = orientation
-        # case 2: only location was given
-        else:
-            buildable_loc = loc
-            buildbale_ort = self.finder.build_at_location_with_random_orientation(
-                loc=loc, sizes=avail_ori
-            )
-        # now we check if building location and orientation are valid
+        # do physical checks
+        buildable_loc, buildbale_ort = self.finder.perform_building_physical_checks(
+            loc=loc, orientation=orientation, avail_ori=self.image_manager.sizes[type]
+        )
         if (buildable_loc is None) or (buildbale_ort == -1):
             return False
 
-        # flow reaches here if physical check passed
-        # both checks passed, therefore we build it
+        # flow reaches here if both checks passed, therefore we build it
         # enumerate building id
         new_building_id: int = self.building_id
         self.building_id += 1
