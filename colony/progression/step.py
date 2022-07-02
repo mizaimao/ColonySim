@@ -104,7 +104,7 @@ def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: 
     """
     while True: # do-while loop in python
         new_coor = spore_step(direction = next_direction, current_coor = current_coor)
-        if validate_coor(0, width, 0, height, new_coor, step):
+        if validate_coor(width, height, coor=new_coor, step=step):
             break
         next_direction = get_direction(size=1)
     return new_coor
