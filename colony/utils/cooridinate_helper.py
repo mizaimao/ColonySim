@@ -259,7 +259,7 @@ class LocationFinder:
         if (loc is not None) and (orientation is not None):
             if self.validate_loc_and_ori(loc, avail_ori[orientation]):
                 buildable_loc = loc
-                buildbale_ort = avail_ori[orientation]
+                buildbale_ort = orientation
         # case 1: neither were given
         elif loc is None:
             if orientation is None:

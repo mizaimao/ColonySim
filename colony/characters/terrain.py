@@ -45,7 +45,7 @@ class TerrainManager:
             tech: tech level of building.
         """
         x, y = start
-        building_code: int = STRUCTURE_PREFIX * 1000 + building_type * 100
+        building_code: int = STRUCTURE_PREFIX * 1000 + building_type * 10
         for x_extend in range(size[0]):
             for y_extend in range(size[1]):
                 if x_extend == 0 and y_extend == 0:

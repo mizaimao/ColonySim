@@ -55,7 +55,7 @@ class ColonyBuildingManager:
         # building tracking dictionary
         self.buildings: Dict[int, Building] = {}
         # unique building ids
-        self.building_id: int = (0,)
+        self.building_id: int = 0
         # colony building locations
         self.building_step: Dict[Tuple[int, int], Building] = {}
         # rng for random locations, orientations, etc.
@@ -80,7 +80,7 @@ class ColonyBuildingManager:
         self,
         type: int,
         loc: Tuple[int, int] = None,
-        tech: int = 0,
+        tech: int = 1,
         orientation: int = None,
     ) -> int:
         """
@@ -119,7 +119,7 @@ class ColonyBuildingManager:
             id=new_building_id,
             type=type,
             location=buildable_loc,
-            tech=tech,
+            tech_level=tech,
             orientation=buildbale_ort,
             size=avail_ori[buildbale_ort],
         )

@@ -56,9 +56,11 @@ class ColonyCommander:
             location: location to build. If not supplied, a random location will be used.
             orientation: orientation of the sctructure. If not supplied, use random.
         """
+        assert level > 0: "Tech level should be larger than 0."
         res_required: Dict[int, int] = res_cfg.building_costs[structure_type][level]
         # perform resource check
         if not self.perform_resource_check(res_required=res_required):
+            print('res check failed', res_required)
             return
         # resource check passed, now get building id
         building_id: int = self.building_man.check_building_is_buildable(
@@ -66,6 +68,7 @@ class ColonyCommander:
         )
         # building physical check didn't pass, therefore not buildable
         if building_id == -1:
+            print("loc check failed")
             return
         # remove resource from colony storage and modify terrain to finish construction
         self.consume_resource(res_required=res_required)
