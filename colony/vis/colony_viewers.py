@@ -114,14 +114,22 @@ class ColonyViewIso(ColonyView):
         )
         return (new_x, new_y)
 
-    def _get_iso_coor_set(self, x: float, y: float) -> Tuple[Tuple[int, int], ...]:
+    def _get_iso_coor_set(
+            self,
+            x: float,
+            y: float,
+            size: Tuple[int, int] = (1, 1)
+        ) -> Tuple[Tuple[int, int], ...]:
         """Get projected four corners of a tile, that is,
-        (x, x), (x + 1, y), (x + 1, y + 1) and (x, y + 1)
+        (x, x), (x + 1, y), (x + 1, y + 1) and (x, y + 1) for size==(1, 1)
+        or in general (x, x), (x + x_extend, y), (x + x_extend, y + y_extend)
+        and (x, y + y_extend) for size==(x_extend, y_extend).
         """
+        x_extend, y_extend = size
         ul: Tuple[int, int] = self._get_iso_coor(x, y)
-        ur: Tuple[int, int] = self._get_iso_coor(x + 1, y)
-        ll: Tuple[int, int] = self._get_iso_coor(x, y + 1)
-        lr: Tuple[int, int] = self._get_iso_coor(x + 1, y + 1)
+        ur: Tuple[int, int] = self._get_iso_coor(x + x_extend, y)
+        ll: Tuple[int, int] = self._get_iso_coor(x, y + y_extend)
+        lr: Tuple[int, int] = self._get_iso_coor(x + x_extend, y + y_extend)
         return (ul, ur, ll, lr)
 
     def _paint_grid_lines(self, frame: np.ndarray):
@@ -210,7 +218,8 @@ class ColonyViewIso(ColonyView):
         frame: np.ndarray,
         x: int,
         y: int,
-        color: Tuple,
+        color: Tuple[int, ...],
+        size: Tuple[int, int] = (1, 1),
         background: bool = False,
         outline: bool = True,
     ):
@@ -241,7 +250,7 @@ class ColonyViewIso(ColonyView):
             half_lower_shifter = (0, 0)
 
         # four original corners of each tile
-        ul, ur, ll, lr = self._get_iso_coor_set(x, y)
+        ul, ur, ll, lr = self._get_iso_coor_set(x, y, size=size)
 
         # draw surface of a tile      ??? why a positive number causing it shift below ???
         contours: np.ndarray = np.array([ul, ll, lr, ur]) - upper_shifter

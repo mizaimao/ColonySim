@@ -73,6 +73,8 @@ class MainScenePainter:
             elif isinstance(obj_on_tile, Building):
                 building_code: int = STRUCTURE_PREFIX * 1000 + obj_on_tile.type * 10 + obj_on_tile.tech_level
                 building_color = map_ref[building_code][-1]
-                self.painter.paint_large_pixel(frame, x, y, building_color, outline=TILE_OUTLINE)
+                self.painter.paint_large_pixel(
+                    frame, x, y, building_color, size=obj_on_tile.size, outline=TILE_OUTLINE
+                )
 
         return frame
