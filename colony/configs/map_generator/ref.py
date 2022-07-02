@@ -3,6 +3,7 @@
 from telnetlib import SE
 from typing import Dict, Set, Tuple
 
+STRUCTURE_PREFIX: int = 7
 # buildale tiles
 BUILDABLE: Set[int] = {101, }
 # passiable tiles
@@ -18,7 +19,9 @@ map_ref: Dict[int, Tuple] = {
     #   then the start-drawing-point will have code 7111 (level 1), while the other
     #   three will have code 7110 (see the appending 0)
     # 1, 2, 3, 4 postfixes, building code with tech level.
-    
+    1: ("blue spore", (245, 158, 66)),
+    3: ("red spore", ((95, 95, 250))),
+
     # 101-200: vege
     101: ("grass", (57, 191, 141)),
     111: ("tree", (66, 105, 47)),
@@ -35,5 +38,11 @@ map_ref: Dict[int, Tuple] = {
     7112: ("farm (lv.2)", (255, 255, 255)),
     7113: ("farm (lv.3)", (255, 255, 255)),
     7114: ("farm (lv.4)", (255, 255, 255)),
+
+    7210: ("timber area", (255, 255, 255)),
+    7211: ("timber (lv.1)", (255, 255, 255)),
+    7212: ("timber (lv.2)", (255, 255, 255)),
+    7213: ("timber (lv.3)", (255, 255, 255)),
+    7214: ("timber (lv.4)", (255, 255, 255)),
 
 }

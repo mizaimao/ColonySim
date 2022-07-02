@@ -4,9 +4,7 @@ from typing import Any, Dict, Tuple, List
 import numpy as np
 
 from colony.configuration import map_cfg
-
-
-STRUCTURE_PREFIX: int = 7
+from colony.configs.map_generator.ref import STRUCTURE_PREFIX
 
 
 class TerrainManager:

@@ -27,7 +27,7 @@ class Building:
     """
 
     id: int
-    type: str
+    type: int
     tech_level: int
     location: Tuple[int, int]
     orientation: Optional[int] = 0
@@ -124,6 +124,7 @@ class ColonyBuildingManager:
             size=avail_ori[buildbale_ort],
         )
         self.buildings[new_building_id] = new_building
+        self.building_step[buildable_loc] = self.buildings[new_building_id]
         return new_building_id
 
     def relocate_building(self, id: int) -> bool:

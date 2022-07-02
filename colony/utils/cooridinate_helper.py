@@ -165,7 +165,6 @@ class LocationFinder:
         x, y = loc
         for y_extend in range(size[1]):
             for x_extend in range(size[0]):
-                print(x + x_extend, y + y_extend)
                 if not self.tile_buildable((x + x_extend, y + y_extend)):
                     return False
         return True
