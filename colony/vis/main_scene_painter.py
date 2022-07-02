@@ -75,26 +75,16 @@ class MainScenePainter:
                             index=obj_on_tile.orientation
                         )
                         self.painter.paint_image_as_large_pixel(
-                            frame=frame,
-                            x=x,
-                            y=y,
-                            image=image
+                            frame=frame, x=x, y=y, image=image
                         )
 
                 else:  # image mode off, or image not available
                     building_code: int = (
-                        STRUCTURE_PREFIX * 1000
-                        + obj_on_tile.type * 10
-                        + obj_on_tile.tech_level
+                        STRUCTURE_PREFIX * 1000 + obj_on_tile.type * 10 + obj_on_tile.tech_level
                     )
                     building_color = map_ref[building_code][-1]
                     self.painter.paint_large_pixel(
-                        frame,
-                        x,
-                        y,
-                        building_color,
-                        size=obj_on_tile.size,
-                        outline=TILE_OUTLINE,
+                        frame, x, y, building_color, size=obj_on_tile.size, outline=TILE_OUTLINE
                     )
         return frame
 
@@ -115,13 +105,11 @@ class MainScenePainter:
             merged_step[coor] = building
         for coor, spore_ids in spore_step.items():
             if coor not in merged_step:
-                merged_step[coor] = self.colony.spore_man.spores[
-                    spore_ids[0]
-                ]  # the top spore
+                merged_step[coor] = self.colony.spore_man.spores[spore_ids[0]]  # the top spore
             else:  # this tile is occupied by another building/spore already
                 pass
 
-        # need to sort spores to paint them in a correct order, this is needed for isometrci viewing
+        # need to sort spores to paint them in a correct order, this is needed for isometric
         _tempList = sorted(merged_step.keys(), key=lambda x: x[0], reverse=True)
         step_sorted: list = sorted(_tempList, key=lambda x: x[1])
         # paint all objects
