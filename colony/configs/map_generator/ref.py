@@ -5,6 +5,8 @@ from typing import Dict, Set, Tuple
 
 # buildale tiles
 BUILDABLE: Set[int] = {101, }
+# passiable tiles
+PASSABLE: Set[int] = {101, }
 
 # NOTE: color codes are in RGB
 map_ref: Dict[int, Tuple] = {

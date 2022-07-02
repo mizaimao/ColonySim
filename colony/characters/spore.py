@@ -127,6 +127,8 @@ class ColonySporeManager:
     def calculate_spore_movements(self):
         # processed step placeholder
         new_step = {}
+        # pointer to bitmap
+        bitmap: np.ndarray = self.terrain_man.bitmap
         # generate next moves of spores in a batch
         next_directions = get_direction(size=self.current_pop)
 
@@ -137,6 +139,7 @@ class ColonySporeManager:
             for spore_id in spores_in_tile:
                 # spore movement
                 new_coor = get_next_coor(
+                    bitmap,
                     next_directions[spore_counter],
                     coor,
                     self.width,

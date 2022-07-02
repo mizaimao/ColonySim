@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 #from colony.characters.spore import Spore
 
@@ -98,13 +99,26 @@ def get_direction(size: int = 1):
     return np.random.randint(low=0, high=9, size=size)
 
 
-def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: int, step: dict):
+def get_next_coor(
+        bitmap: np.ndarray,
+        next_direction: int,
+        current_coor: Tuple[int, int],
+        width: int,
+        height: int,
+        step: dict
+    ):
     """
     Generate the coor of the next step. Only returns valid coor.
     """
     while True: # do-while loop in python
         new_coor = spore_step(direction = next_direction, current_coor = current_coor)
-        if validate_coor(width, height, coor=new_coor, step=step):
+        if validate_coor(
+                bitmap=bitmap, 
+                x_high=width,
+                y_high=height,
+                coor=new_coor,
+                step=step
+            ):
             break
         next_direction = get_direction(size=1)
     return new_coor
