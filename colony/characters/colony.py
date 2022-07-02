@@ -60,7 +60,7 @@ class Colony:
         # pointers to terrain manager
         self.terrain_man: TerrainManager = TerrainManager()
 
-        # pointers to other managers
+        # pointers to other managers, order matters
         self.info: ColonyGeneralInfo = ColonyGeneralInfo()
         self.image_manager: ImageManager = image_manager
         self.spore_man: ColonySporeManager = ColonySporeManager(

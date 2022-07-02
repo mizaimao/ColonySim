@@ -77,12 +77,7 @@ class StepVisulizer:
             steps=5,
             max_rows=15,
             text_width=80,
-            custom_lines=[
-                res11_info,
-                res21_info,
-                res22_info,
-                res23_info,
-            ]
+            custom_lines=[res11_info, res21_info, res22_info, res23_info,]
         )
 
         # if with_info:
