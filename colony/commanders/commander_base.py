@@ -1,6 +1,5 @@
 """Input interface to Colony instances.
 """
-import re
 import cv2
 from typing import Dict, List, Tuple
 

@@ -1,3 +1,4 @@
+"""Functions for bitmap manipulation."""
 from typing import Tuple
 import numpy as np
 from typing import Dict, List, Tuple, Set

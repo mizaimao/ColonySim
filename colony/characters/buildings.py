@@ -1,7 +1,5 @@
 """Building objects for colony."""
-from curses import termattrs
 from dataclasses import dataclass, field
-from distutils.command.build import build
 from typing import Any, List, Dict, Set, Tuple, Optional
 
 import numpy as np
