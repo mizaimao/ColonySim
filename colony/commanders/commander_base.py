@@ -10,6 +10,7 @@ from colony.characters.buildings import Building, ColonyBuildingManager
 from colony.characters.terrain import TerrainManager
 from colony.characters.spore import Spore, ColonySporeManager
 from colony.utils.image_manager import ImageManager
+from colony.utils.cooridinate_helper import bfs
 
 
 class ColonyCommander:
@@ -78,3 +79,13 @@ class ColonyCommander:
             building_type=structure_type,
             tech=level,
         )
+
+    def move_spore(
+        self,
+        spore_id: int,
+        start: Tuple[int, int],
+        dest: Tuple[int, int],
+    ):
+        """Command a spore to move to a new location."""
+        
+        pass

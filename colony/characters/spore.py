@@ -1,5 +1,5 @@
 import numpy as np
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, Tuple, List, Optional
 
 from colony.configuration import res_cfg
@@ -21,6 +21,7 @@ class Spore:
     sid: int
     sex: int
     age: int
+    pos: Tuple[int, int]
     health: int
 
     # personal storage
@@ -29,7 +30,8 @@ class Spore:
     health_cap: Optional[int] = HEALTH_CAP
     # on-going route, if empty, it will go randomly one of 9 directions
     # (including staying at the same position)
-    current_path: Optional[List[Tuple[int, int]]] = None
+    route: Optional[List[Tuple[int, int]]] = field(default_factory=lambda: [])
+    
 
 
 class ColonySporeManager:
@@ -105,6 +107,7 @@ class ColonySporeManager:
             sid=self.id_counter,
             sex=sex,
             age=0,
+            pos=coor,
             health=INITAL_HEALTH,
             storage=SporeStorage(res={res_type: 0 for res_type in res_cfg.starting_res.keys()}),
         )
@@ -137,15 +140,19 @@ class ColonySporeManager:
         for coor, spores_in_tile in self.step.items():
             # process each spore on this tile
             for spore_id in spores_in_tile:
-                # spore movement
-                new_coor = get_next_coor(
-                    bitmap,
-                    next_directions[spore_counter],
-                    coor,
-                    self.width,
-                    self.height,
-                    new_step,
-                )
+                spore: Spore = self.spores[spore_id]
+                if not spore.route:  # spore is not on a route, so move randomly
+                    # spore movement
+                    new_coor: Tuple[int, int] = get_next_coor(
+                        bitmap,
+                        next_directions[spore_counter],
+                        coor,
+                        self.width,
+                        self.height,
+                        new_step,
+                    )
+                else:  # make the spore move according to its route
+                    new_coor = spore.route.pop(0)
                 # change tiles according to their movements
                 if new_coor not in new_step:
                     new_step[new_coor] = []
