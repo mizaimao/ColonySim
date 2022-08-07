@@ -10,6 +10,7 @@ from colony.characters.colony import Colony
 from colony.configuration import visual_cfg, MapSetup, map_cfg
 from colony.configs.map_generator.ref import map_ref
 from colony.vis.panda.cube import make_a_cube, make_a_cuboid
+from colony.characters.spore import Spore, ColonySporeManager
 
 
 def pColor(color: Sequence[int], BGR: bool = True) -> List[int]:
@@ -28,7 +29,7 @@ class PandaViewer(ShowBase):
     """
     Customized 3D render inherited from panda3D object.
     """
-    def __init__(self, colony: Colony):
+    def __init__(self, colony: Colony = None):
         """Constructor."""
         super().__init__(self)
 
@@ -58,6 +59,7 @@ class PandaViewer(ShowBase):
 
         self.paint_playground()  # add map and basic objects to screeen
         #self.test_location()
+        self.add_initial_players()
 
         # this is needed in order to control camera by keyboard
         self.disableMouse()
@@ -125,16 +127,11 @@ class PandaViewer(ShowBase):
         )
 
         playboard_gn: GeomNode = make_a_cuboid(*self.pg_size)
-        playboard = self.render.attachNewNode(playboard_gn)
-        playboard.setTwoSided(True)
-        playboard.setPos(0, 0, 0)
-        playboard.setScale(scalar, scalar, scalar)
-        playboard.setColor(*playground_color)
-
-        self.add_cube(ref=playboard, loc=(39, 39))
-        self.add_cube(ref=playboard, loc=(0, 0))
-        self.add_cube(ref=playboard, loc=(0, 39))
-        self.add_cube(ref=playboard, loc=(39, 0))
+        self.playboard = self.render.attachNewNode(playboard_gn)
+        self.playboard.setTwoSided(True)
+        self.playboard.setPos(0, 0, 0)
+        self.playboard.setScale(scalar, scalar, scalar)
+        self.playboard.setColor(*playground_color)
 
     def _figure_out_multiplier(self):
         """Helper function to calculate mapping values."""
@@ -161,7 +158,8 @@ class PandaViewer(ShowBase):
             self,
             ref: NodePath = None,
             loc: Tuple[int, int] = (0, 0),
-            z_shift: float = None
+            color: Tuple[float, float, float, float] = (1., 0., 0., 1.),
+            z_shift: float = None,
         ):
         """
         Add a single cube/cuboid onto playground.
@@ -205,17 +203,38 @@ class PandaViewer(ShowBase):
             cube.setScale(scalar, scalar, scalar)
 
         # test color setup
-        c: Tuple[int, int, int] = pColor(map_ref[1][-1])
-        cube.setColor(*c)
+        #c: Tuple[int, int, int] = 
+        cube.setColor(*color)
 
     def add_cube_by_spore(            
             self,
+            spore: Spore,
             ref: NodePath = None,
-            loc: Tuple[int, int] = (0, 0),
             z_shift: float = None
         ):
         """Wrapper of add_cube() but with a Spore object."""
-        pass
+        loc: Tuple[int, int] = spore.pos
+
+        color: Tuple[float, ...] = pColor(map_ref[spore.sex][-1])
+        self.add_cube(ref=ref, loc=loc, color=color, z_shift=z_shift)
+
+    def add_initial_players(self):
+        """Add inital batch of spores."""
+        # if colony for some reason was not parse, then place four cubes on
+        # four corners (indicating it's empty)
+        if self.colony is None:
+            top_x: int = self.bitmap.shape[0]
+            top_y: int = self.bitmap.shape[1]
+            
+            self.add_cube(ref=self.playboard, loc=(top_x, top_y))
+            self.add_cube(ref=self.playboard, loc=(0, 0))
+            self.add_cube(ref=self.playboard, loc=(0, top_y))
+            self.add_cube(ref=self.playboard, loc=(top_x, 0))
+            return
+        
+        spore_man: ColonySporeManager = self.colony.spore_man
+        for spore_id, spore in spore_man.spores.items():
+            self.add_cube_by_spore(spore, ref=self.playboard)
 
 
 if __name__ == "__main__":

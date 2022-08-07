@@ -45,7 +45,7 @@ if __name__ == '__main__':
         image_manager=image_manager,
         seed=SEED,
         verbose=(mode!='dump'))
-
+        
     cycle_counter = -1
 
     if FAST_FORWARD > 0:
@@ -54,6 +54,6 @@ if __name__ == '__main__':
     # plotting object
     #visualizer = StepVisulizer(colony=chicken_col, painter_style=PAINTER_STYLE, image_manager=image_manager)
     panda_viewer: PandaViewer = PandaViewer(colony=chicken_col)
-    print(panda_viewer.colony.building_man.building_id)
+    print(panda_viewer.colony.spore_man.spores)
 
     panda_viewer.run()

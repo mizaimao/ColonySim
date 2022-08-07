@@ -97,6 +97,7 @@ class ColonySporeManager:
                 while (x, y) in self.step:
                     x = self.rng.randint(low=0, high=self.width)
                     y = self.rng.randint(low=0, high=self.height)
+            coor = (x, y)
         else:
             x, y = coor
             if coor in self.step and (not self.allow_init_overlapping):
