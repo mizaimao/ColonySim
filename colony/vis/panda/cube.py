@@ -2,7 +2,7 @@
 Codes to build cubes for panda3D, therefore no need to load any assets from
 disk.
 
-Based on official sample script:
+These crappy codes were based on official sample script:
 https://github.com/panda3d/panda3d/blob/master/samples/procedural-cube/main.py
 """
 from panda3d.core import GeomVertexFormat, GeomVertexData
@@ -74,15 +74,43 @@ def makeSquare(x1, y1, z1, x2, y2, z2):
     return square
 
 
-def make_a_cube():
-    # Note: it isn't particularly efficient to make every face as a separate Geom.
-    # instead, it would be better to create one Geom holding all of the faces.
-    square0 = makeSquare(-1, -1, -1, 1, -1, 1)
-    square1 = makeSquare(-1, 1, -1, 1, 1, 1)
-    square2 = makeSquare(-1, 1, 1, 1, -1, 1)
-    square3 = makeSquare(-1, 1, -1, 1, -1, -1)
-    square4 = makeSquare(-1, -1, -1, -1, 1, 1)
-    square5 = makeSquare(1, -1, -1, 1, 1, 1)
+def make_a_cube(side: float = 2.) -> GeomNode:
+    """
+    NOTE: it isn't particularly efficient to make every face as a separate Geom.
+    instead, it would be better to create one Geom holding all of the faces.
+    """
+    hs: float = side / 2  # half side
+    square0 = makeSquare(-hs, -hs, -hs, hs, -hs, hs)
+    square1 = makeSquare(-hs, hs, -hs, hs, hs, hs)
+    square2 = makeSquare(-hs, hs, hs, hs, -hs, hs)
+    square3 = makeSquare(-hs, hs, -hs, hs, -hs, -hs)
+    square4 = makeSquare(-hs, -hs, -hs, -hs, hs, hs)
+    square5 = makeSquare(hs, -hs, -hs, hs, hs, hs)
+    snode = GeomNode('square')
+    snode.addGeom(square0)
+    snode.addGeom(square1)
+    snode.addGeom(square2)
+    snode.addGeom(square3)
+    snode.addGeom(square4)
+    snode.addGeom(square5)
+
+    return snode
+
+
+def make_a_cuboid(
+        side_x: float = 2., side_y: float = 2., side_z: float = 2.
+    ) -> GeomNode:
+    hx: float = side_x / 2
+    hy: float = side_y / 2
+    hz: float = side_z / 2
+
+    square0 = makeSquare(-hx, -hy, -hz, hx, -hy, hz)
+    square1 = makeSquare(-hx, hy, -hz, hx, hy, hz)
+    square2 = makeSquare(-hx, hy, hz, hx, -hy, hz)
+    square3 = makeSquare(-hx, hy, -hz, hx, -hy, -hz)
+    square4 = makeSquare(-hx, -hy, -hz, -hx, hy, hz)
+    square5 = makeSquare(hx, -hy, -hz, hx, hy, hz)
+
     snode = GeomNode('square')
     snode.addGeom(square0)
     snode.addGeom(square1)
