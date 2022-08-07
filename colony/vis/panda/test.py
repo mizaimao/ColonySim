@@ -47,6 +47,11 @@ class PandaViewer(ShowBase):
         self._init_lighting()  # lighting pos, etc.
         self._init_graphics()  # make graphic-related changes
         self._init_keys()  # key mapping
+
+        # calcualte needed multipliers for visual mapping purposes.
+        # E.g. mapping sizes of spores in relate to playboard size.
+        self._figure_out_multiplier()
+
         self.paint_playground()  # add map and basic objects to screeen
         #self.test_location()
 
@@ -54,12 +59,13 @@ class PandaViewer(ShowBase):
         self.disableMouse()
 
     def _init_window(self):
-        # setup window properties
+        """Set up window properties."""
         properties: WindowProperties = WindowProperties()
         properties.setSize(visual_cfg.panda_width, visual_cfg.panda_height)
         self.win.requestProperties(properties)
 
     def _init_camera(self):
+        """Set up camera location and direction."""
         self.camera.setPos(0, 0, 20)
         self.camera.lookAt(0.0, 0.0, 0.0)
         self.camLens.setNearFar(1.0, 50.0)
@@ -68,6 +74,7 @@ class PandaViewer(ShowBase):
         #self.camera.setP(-90)
 
     def _init_lighting(self):
+        """Set up lighting of scene."""
         self.ambientLight = self.render.attachNewNode(
             AmbientLight("ambient light")
         )
@@ -82,23 +89,28 @@ class PandaViewer(ShowBase):
         self.render.setLight(self.mainLight)
 
     def _init_keys(self):
-        self.accept("d", self.move, [1.0, 0.0, 0.0])
-        self.accept("a", self.move, [-1.0, 0.0, 0.0])
-        self.accept("w", self.move, [0.0, 1.0, 0.0])
-        self.accept("s", self.move, [0.0, -1.0, 0.0])
-        self.accept("e", self.move, [0.0, 0.0, 1.0])
-        self.accept("q", self.move, [0.0, 0.0, -1.0])
+        """Configure key mapping."""
+        self.accept("d", self.move_camera, [1.0, 0.0, 0.0])
+        self.accept("a", self.move_camera, [-1.0, 0.0, 0.0])
+        self.accept("w", self.move_camera, [0.0, 1.0, 0.0])
+        self.accept("s", self.move_camera, [0.0, -1.0, 0.0])
+        self.accept("e", self.move_camera, [0.0, 0.0, 1.0])
+        self.accept("q", self.move_camera, [0.0, 0.0, -1.0])
 
     def _init_graphics(self):
-        
+        """Configure graphics."""
         pass
 
-    def move(self, x, y, z):
+    def move_camera(self, x, y, z):
+        """Helper function to move camera."""
         self.camera.setX(self.camera.getX() + x)
         self.camera.setY(self.camera.getY() + y)
         self.camera.setZ(self.camera.getZ() + z)
 
     def paint_playground(self):
+        """
+        Draw playground, and add players/spores onto it.
+        """
         # setup background
         self.set_background_color(pColor(visual_cfg.stage_background))
 
@@ -115,13 +127,32 @@ class PandaViewer(ShowBase):
         playboard.setScale(scalar, scalar, scalar)
         playboard.setColor(*playground_color)
 
-        self._figure_out_multiplier()
-        self.add_cube(ref=playboard, loc=(-1, -1), z_shift=None)
-        self.add_cube(ref=playboard, loc=(1, 1), z_shift=None)
+        print(self.bitmap.shape)
+        self.add_cube(ref=playboard, loc=(39, 39))
+        self.add_cube(ref=playboard, loc=(0, 0))
+        self.add_cube(ref=playboard, loc=(0, 39))
+        self.add_cube(ref=playboard, loc=(39, 0))
 
     def _figure_out_multiplier(self):
+        """Helper function to calculate mapping values."""
         self.cube_x = self.pg_size[0] / self.bitmap.shape[0]
         self.cube_y = self.pg_size[1] / self.bitmap.shape[1]
+        
+    def map_bitmap_loc_to_playboard_loc(
+            self, bitmap_x: int, bitmap_y: int
+        ) -> Tuple[float, float]:
+        """
+        Map locations on bitmap to playground.
+        Some offset are added because (0, 0) on bitmap is actually the upper
+        left cornor on playground.
+        """
+        # x and y shifts, types are floats
+        x_shift, y_shift = self.pg_size[0] / 2 , self.pg_size[1] / 2
+        
+        board_x: float = bitmap_x * self.cube_x - x_shift + self.cube_x / 2
+        board_y: float = bitmap_y * self.cube_y - y_shift + self.cube_y / 2
+
+        return board_x, board_y
 
     def add_cube(
             self,
@@ -134,7 +165,7 @@ class PandaViewer(ShowBase):
         
         Args
             ref: Root object to which the cube to attach.
-            loc: Coor of the cube on bitmap.
+            loc: Coor of the cube on bitmap; NOT on the reference.
             z_shift: Usually positve, such that the cube would appear to be
                 sitting above the playground. If None was given, it will use
                 height of playground so that cubes will be right above board.
@@ -143,15 +174,17 @@ class PandaViewer(ShowBase):
         if ref is None:
             ref = self.render
         if z_shift is None:  # set height shift if None was given
-            z_shift = self.pg_size[-1]
+            # half of playboard height because by default, playboard is set to the
+            # very center of scene, namely, (0, 0, 0) and therefore on each dimension
+            # length is halved (half above 0 and the other halve below 0)
+            z_shift = self.pg_size[-1] / 2
 
         # scalar of cube, maybe it's not needed but I will leave it for potential
         # future uses
         scalar: float = 1.
 
-        # map bitmap location to playboard
-        loc_x: float = loc[0] * self.cube_x
-        loc_y: float = loc[1] * self.cube_y
+        # map bitmap location to playboard, types are floats
+        loc_x, loc_y = self.map_bitmap_loc_to_playboard_loc(*loc)
 
         # make a cube or cuboid
         if self.cube_x == self.cube_y:
