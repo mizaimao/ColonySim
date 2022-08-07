@@ -96,8 +96,11 @@ class ResSetup:
 
     starting_res: Dict[int, int] = field(default_factory=lambda: {})
     income_speed: Dict[int, List[int]] = field(default_factory=lambda: {})
-    building_costs: Dict[int, Dict[int, int]]= field(default_factory=lambda: {})
+    building_costs: List[Dict[int, Dict[int, int]]] = field(default_factory=lambda: {})
     
+    def __post_init__(self):
+        for building_code, building_cost in self.building_costs.items():
+            self.building_costs[building_code] = [{}] + building_cost
 
 res_cfg = ResSetup(
     **yaml.safe_load(open(config_path.joinpath("resource/default.yaml")))

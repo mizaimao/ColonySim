@@ -114,14 +114,22 @@ class ColonyViewIso(ColonyView):
         )
         return (new_x, new_y)
 
-    def _get_iso_coor_set(self, x: float, y: float) -> Tuple[Tuple[int, int], ...]:
+    def _get_iso_coor_set(
+            self,
+            x: float,
+            y: float,
+            size: Tuple[int, int] = (1, 1)
+        ) -> Tuple[Tuple[int, int], ...]:
         """Get projected four corners of a tile, that is,
-        (x, x), (x + 1, y), (x + 1, y + 1) and (x, y + 1)
+        (x, x), (x + 1, y), (x + 1, y + 1) and (x, y + 1) for size==(1, 1)
+        or in general (x, x), (x + x_extend, y), (x + x_extend, y + y_extend)
+        and (x, y + y_extend) for size==(x_extend, y_extend).
         """
+        x_extend, y_extend = size
         ul: Tuple[int, int] = self._get_iso_coor(x, y)
-        ur: Tuple[int, int] = self._get_iso_coor(x + 1, y)
-        ll: Tuple[int, int] = self._get_iso_coor(x, y + 1)
-        lr: Tuple[int, int] = self._get_iso_coor(x + 1, y + 1)
+        ur: Tuple[int, int] = self._get_iso_coor(x + x_extend, y)
+        ll: Tuple[int, int] = self._get_iso_coor(x, y + y_extend)
+        lr: Tuple[int, int] = self._get_iso_coor(x + x_extend, y + y_extend)
         return (ul, ur, ll, lr)
 
     def _paint_grid_lines(self, frame: np.ndarray):
@@ -210,7 +218,8 @@ class ColonyViewIso(ColonyView):
         frame: np.ndarray,
         x: int,
         y: int,
-        color: Tuple,
+        color: Tuple[int, ...],
+        size: Tuple[int, int] = (1, 1),
         background: bool = False,
         outline: bool = True,
     ):
@@ -228,6 +237,7 @@ class ColonyViewIso(ColonyView):
         Tile outline applies only to player/mimic/whatever-individual tiles, not backgrounds tiles.
         Some lines are overlapping. So different sides will have different number of line drawing statements.
         """
+        outline_color = ISO_TILE_OUTLINE_COLOR if outline else None
         upper_shifter: Tuple[int, int] = (0, int(self.tile_upper_depth))
         half_upper_shifter: Tuple[int, int] = (0, int(self.tile_upper_depth / 2))
 
@@ -241,11 +251,11 @@ class ColonyViewIso(ColonyView):
             half_lower_shifter = (0, 0)
 
         # four original corners of each tile
-        ul, ur, ll, lr = self._get_iso_coor_set(x, y)
+        ul, ur, ll, lr = self._get_iso_coor_set(x, y, size=size)
 
         # draw surface of a tile      ??? why a positive number causing it shift below ???
         contours: np.ndarray = np.array([ul, ll, lr, ur]) - upper_shifter
-        self.draw_filled_polygon(frame, contours, color, ISO_TILE_OUTLINE_COLOR)
+        self.draw_filled_polygon(frame, contours, color, outline_color)
 
         # draw elevated left side
         if (not background) or (x == 0):
@@ -254,7 +264,7 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(color, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
         # draw elevated right side
@@ -264,7 +274,7 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(color, ISO_TILE_UPPER_RIGHT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
         # draw underground left side
@@ -274,7 +284,7 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(DIRT_COLOR, ISO_TILE_UPPER_LEFT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
         # draw underground right side
@@ -284,23 +294,35 @@ class ColonyViewIso(ColonyView):
                 frame,
                 contours,
                 shift_color(DIRT_COLOR, ISO_TILE_UPPER_RIGHT_COLOR_SHIFT),
-                ISO_TILE_OUTLINE_COLOR,
+                outline_color,
             )
 
 
 class ColonyViewIsoImage(ColonyViewIso):
     """Extends the basic isometric viewer to support image overlaying.
     """
-    def __init__(self, width: int, height: int, frame_width: int, frame_height: int, bitmap, seed: int = 720):
+    def __init__(self,
+        width: int,
+        height: int,
+        frame_width: int,
+        frame_height: int,
+        bitmap: np.ndarray,
+        image_manager: ImageManager = None,
+    ):
         """New attributes would be cached images or values will that will be repetitively calculated.
         """
         super().__init__(width, height, frame_width, frame_height, bitmap)
-
-        self.imager: ImageManager = ImageManager(
-            set_name=DEFAULT_TILE_SET,
-            seed=seed,
-            tile_width=self.get_tile_width())
-        self.rng = np.random.RandomState(seed)
+        if image_manager is None:
+            print("Image manager not parsed, using default.")
+            self.imager: ImageManager = ImageManager(
+                set_name=DEFAULT_TILE_SET,
+                seed=720,
+            )
+        else:
+            self.imager = image_manager
+        # save current tile width and update when zoom level changes
+        self.tile_width: int = self.get_tile_width()
+        self.imager.prepare_tileset(self.tile_width)
 
         
     def get_tile_width(self):
@@ -318,20 +340,21 @@ class ColonyViewIsoImage(ColonyViewIso):
 
     def paint_floors(self, tiles: Union[np.ndarray, List[np.ndarray]]) -> np.ndarray:
         """Paint floors with a given tileset."""
-        background: np.ndarray = self.static_frame.copy()
+        pass
+        # background: np.ndarray = self.static_frame.copy()
         
-        if isinstance(tiles, np.ndarray):
-            tiles = [tiles]
-        indices: List[int] = self.rng.choice(len(tiles), self.bitmap.size)
-        image_index: int = 0
+        # if isinstance(tiles, np.ndarray):
+        #     tiles = [tiles]
+        # indices: List[int] = self.rng.choice(len(tiles), self.bitmap.size)
+        # image_index: int = 0
         
-        for y in range(len(self.bitmap)):
-            for x in range(len(self.bitmap[0]) - 1, 0 - 1, -1):
-                tile_image: np.ndarray = tiles[indices[image_index]]
-                self.paint_image_as_large_pixel(background, x, y, tile_image)
-                image_index += 1
+        # for y in range(len(self.bitmap)):
+        #     for x in range(len(self.bitmap[0]) - 1, 0 - 1, -1):
+        #         tile_image: np.ndarray = tiles[indices[image_index]]
+        #         self.paint_image_as_large_pixel(background, x, y, tile_image)
+        #         image_index += 1
                 
-        return background
+        # return background
 
     def paint_image_as_large_pixel(
         self,

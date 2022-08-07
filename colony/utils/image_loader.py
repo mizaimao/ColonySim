@@ -1,6 +1,5 @@
 """Loads image assets from the disk and perform necessary processing.
 """
-import os
 import numpy as np
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -27,7 +26,7 @@ class ImageLoader:
     asset_root: Path
     structure: Dict[str, Dict[str, str]]
     surface: Optional[Dict[str, List[Path]]] = field(default_factory=lambda: {})
-    raw_image_set: Dict[str, Dict[str, Dict[str, Any]]] = field(default_factory=lambda: {})
+    raw_image_set: Dict[int, Dict[str, Dict[str, Any]]] = field(default_factory=lambda: {})
 
     def __post_init__(self):
         """Formating and check data correctness."""
@@ -35,11 +34,12 @@ class ImageLoader:
         self.asset_root = Path(self.asset_root)
         # load and dump raw image arrays to an ImageSet instance
         for image_name, v in self.structure.items():
-            path, sizes = self.unpack_path_size_pair(v)
+            path, sizes, type = self.unpack_path_size_type(v)
             images: List[np.ndarray] = self.load_image_from_disk(
                 asset_path=path, split=len(sizes)
             )
-            self.raw_image_set[image_name] = {
+            self.raw_image_set[type] = {
+                "name": image_name,
                 "images": images,
                 "sizes": sizes
             }
@@ -47,16 +47,17 @@ class ImageLoader:
             self.surface[k] = [Path(p) for p in v]
         
     @staticmethod
-    def unpack_path_size_pair(pair: Dict[str, str]) -> Tuple[Path, List[Tuple[int]]]:
+    def unpack_path_size_type(prop_set: Dict[str, Any]) -> Tuple[Path, List[Tuple[int]], int]:
         """Unpack image path, sub-image orientation and sizes
         from yaml parser to usable format.
         """
-        asset_path: Path = Path(pair['path'])
-        size_str: List[str] = pair['sizes'].split(", ")
+        asset_path: Path = Path(prop_set['path'])
+        size_str: List[str] = prop_set['sizes'].split(", ")
+        asset_type: int = int(prop_set['type'])
         asset_sizes: List(Tuple[int, int]) = [
             (int(x[0]), int(x[1])) for x in size_str
         ]
-        return asset_path, asset_sizes
+        return asset_path, asset_sizes, asset_type
     
     def load_image_from_disk(self, asset_path: Path, split: int = 1) -> List[np.ndarray]:
         """Load one image file to memory and perform necessary checks and split.

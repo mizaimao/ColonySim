@@ -3,6 +3,7 @@ import numpy as np
 
 from colony.configs.map_generator.ref import map_ref
 from colony.characters.colony import Colony
+from colony.utils.image_manager import ImageManager
 from colony.vis.curve_painter import CurvePainter
 from colony.configuration import MapSetup, map_cfg, world_cfg, WorldSetup
 from colony.characters.storage import RES_MAPPING
@@ -18,7 +19,13 @@ class StepVisulizer:
     Visualize a single step in colony. Builds and merges multiple panes to form a unified viewer.
     """
 
-    def __init__(self, colony: Colony, map_cfg: MapSetup = map_cfg):
+    def __init__(
+        self,
+        colony: Colony,
+        painter_style: str,
+        image_manager: ImageManager = None,
+        map_cfg: MapSetup = map_cfg,
+    ):
         """
         Args
             colony: pointer to a colony object saved in memory
@@ -35,17 +42,14 @@ class StepVisulizer:
         left_info_pane_width: int = int(frame_width / 2)
         right_info_pane_width: int = frame_width - left_info_pane_width
 
-        painter_style: str = "isometric_image"
-        #painter_style: str = "isometric"
-        #painter_style = "2D"
-
         # setup painters (three panes)
         self.main_painter = MainScenePainter(  # main view (upper pane)
             painter_style,
             self.colony,
             self.bitmap,
             frame_width,
-            frame_height)
+            frame_height,
+            image_manager=image_manager)
          # colony info painter (lower left pane)
         self.info_pane_painter: InfoPanePainter = InfoPanePainter(
             width=left_info_pane_width,
@@ -73,12 +77,7 @@ class StepVisulizer:
             steps=5,
             max_rows=15,
             text_width=80,
-            custom_lines=[
-                res11_info,
-                res21_info,
-                res22_info,
-                res23_info,
-            ]
+            custom_lines=[res11_info, res21_info, res22_info, res23_info,]
         )
 
         # if with_info:

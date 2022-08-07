@@ -1,7 +1,9 @@
+from typing import Tuple
 import numpy as np
 #from colony.characters.spore import Spore
 
 from colony.configuration import spore_cfg
+from colony.utils.cooridinate_helper import validate_coor
 
 
 def spore_step(direction: int, current_coor: tuple):
@@ -29,23 +31,6 @@ def spore_step(direction: int, current_coor: tuple):
         return (x - 1, y + 1)
     else:
         raise NotImplementedError("Unknown direction", direction)
-
-
-def validate_coor(
-        x_low: int,
-        x_high: int,
-        y_low: int,
-        y_high: int,
-        coor: tuple,
-        step: dict
-    ):
-    """
-    To verify if the generated coor are inside map
-    """
-    x, y = coor
-    if x_low <= x < x_high and y_low <= y < y_high and ((x, y) not in step):
-        return True
-    return False 
 
     
 def determine_event(sex_a: int, sex_b: int):
@@ -114,13 +99,26 @@ def get_direction(size: int = 1):
     return np.random.randint(low=0, high=9, size=size)
 
 
-def get_next_coor(next_direction: int, current_coor: tuple, width: int, height: int, step: dict):
+def get_next_coor(
+        bitmap: np.ndarray,
+        next_direction: int,
+        current_coor: Tuple[int, int],
+        width: int,
+        height: int,
+        step: dict
+    ):
     """
     Generate the coor of the next step. Only returns valid coor.
     """
     while True: # do-while loop in python
         new_coor = spore_step(direction = next_direction, current_coor = current_coor)
-        if validate_coor(0, width, 0, height, new_coor, step):
+        if validate_coor(
+                bitmap=bitmap, 
+                x_high=width,
+                y_high=height,
+                coor=new_coor,
+                step=step
+            ):
             break
         next_direction = get_direction(size=1)
     return new_coor

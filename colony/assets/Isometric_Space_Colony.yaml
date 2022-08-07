@@ -4,24 +4,31 @@ structure:
   power:
     path: Props/LunarLandscape_Exports_001-48-SolarPanel-1.png
     sizes: "21, 12, 21, 12"
+    type: 71
   habitat:
     path: Buildings/LunarLandscape_Exports_001-1-Building-4.png
     sizes: "11, 11, 11, 11"
+    type: 61
   refinary:
     path: Buildings/LunarLandscape_Exports_001-5-Building.png
     sizes: "21, 12, 21, 12"
+    type: 22
   printer:
     path: Buildings/LunarLandscape_Exports_001-4-Building-1.png
     sizes: "21, 12, 21, 12"
+    type: 23
   farm:
     path: Buildings/LunarLandscape_Exports_001-2-Building-3.png
     sizes: "21, 12, 21, 12"
+    type: 21
   research:
     path: Buildings/LunarLandscape_Exports_001-0-Building-5.png
     sizes: "13, 31, 13, 31"
+    type: 41
   storage:
     path: Buildings/LunarLandscape_Exports_001-6-LandingPlateform.png
     sizes: "22, 22, 22, 22"
+    type: 51
 
 surface:  # not used for now
   ground:

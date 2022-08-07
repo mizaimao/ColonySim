@@ -6,6 +6,7 @@ import tqdm
 import cv2
 
 from colony.characters.colony import Colony
+from colony.utils.image_manager import ImageManager
 from colony.vis.step_visulizer import StepVisulizer
 from colony.configuration import world_cfg, res_cfg
 
@@ -25,30 +26,37 @@ VX = world_cfg.viewer_width
 VY = world_cfg.viewer_height
 INIT_POP = world_cfg.initial_population
 
+PAINTER_STYLE: str = "isometric_image"
+#PAINTER_STYLE: str = "isometric"
+#PAINTER_STYLE = "2D"
+DEFAULT_TILE_SET: str = "space"
+
+SEED: int = 720
+
 
 if __name__ == '__main__':
-    try:
-        x = int(sys.argv[1])
-        y = int(sys.argv[2])
-    except:
-        x = X
-        y = Y
 
     mode = 'interactive'
     #mode = 'dump'
     mode = 'autoplay'
 
+    # create image manager (image assets related)
+    image_manager: ImageManager = ImageManager(
+        set_name=DEFAULT_TILE_SET,
+        seed=SEED,
+    )
+
     # create a colony
     chicken_col = Colony(
-        width=X,
-        height=Y,
         viewer_width=VX,
         viewer_height=VY,
         init_pop=INIT_POP,
-        seed=0,
+        image_manager=image_manager,
+        seed=SEED,
         verbose=(mode!='dump'))
+    
     # plotting object
-    visualizer = StepVisulizer(colony=chicken_col)
+    visualizer = StepVisulizer(colony=chicken_col, painter_style=PAINTER_STYLE, image_manager=image_manager)
     
     cycle_counter = -1
     single_frame = visualizer.plot_step() # returns an np.array
