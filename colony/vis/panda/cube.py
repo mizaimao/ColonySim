@@ -100,6 +100,8 @@ def make_a_cube(side: float = 2.) -> GeomNode:
 def make_a_cuboid(
         side_x: float = 2., side_y: float = 2., side_z: float = 2.
     ) -> GeomNode:
+    """Make a cubuid with 3 args corresponding to length on each dim.
+    """
     hx: float = side_x / 2
     hy: float = side_y / 2
     hz: float = side_z / 2

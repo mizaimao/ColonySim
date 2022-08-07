@@ -6,6 +6,7 @@ import numpy as np
 from direct.showbase.ShowBase import ShowBase
 from panda3d.core import AmbientLight, DirectionalLight, Vec4, WindowProperties, GeomNode, NodePath
 
+from colony.characters.colony import Colony
 from colony.configuration import visual_cfg, MapSetup, map_cfg
 from colony.configs.map_generator.ref import map_ref
 from colony.vis.panda.cube import make_a_cube, make_a_cuboid
@@ -27,10 +28,11 @@ class PandaViewer(ShowBase):
     """
     Customized 3D render inherited from panda3D object.
     """
-    def __init__(self):
+    def __init__(self, colony: Colony):
         """Constructor."""
         super().__init__(self)
 
+        self.colony: Colony = colony
         # playground array
         self.bitmap: np.ndarray = map_cfg.bitmap
         # playground object
@@ -216,5 +218,6 @@ class PandaViewer(ShowBase):
         pass
 
 
-panda_viewer: PandaViewer = PandaViewer()
-panda_viewer.run()
+if __name__ == "__main__":
+    panda_viewer: PandaViewer = PandaViewer()
+    panda_viewer.run()
