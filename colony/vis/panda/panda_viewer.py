@@ -33,14 +33,16 @@ class PandaViewer(ShowBase):
 
         # playground array
         self.bitmap: np.ndarray = map_cfg.bitmap
+        # playground object
+        self.playboard: NodePath
         # playground size
         self.pg_size: Tuple[int, int, int] = (8, 8, 2)
         self.cube_x: float
         self.cube_y: float
         self.cube_z: float
 
-        self.root = self.render.attachNewNode("Root")
-        self.root.setPos(0.0, 0.0, 0.0)
+        # self.root = self.render.attachNewNode("Root")
+        # self.root.setPos(0.0, 0.0, 0.0)
 
         self._init_window()  # window settings
         self._init_camera()  # camera settings
@@ -121,13 +123,12 @@ class PandaViewer(ShowBase):
         )
 
         playboard_gn: GeomNode = make_a_cuboid(*self.pg_size)
-        playboard: NodePath = self.render.attachNewNode(playboard_gn)
+        playboard = self.render.attachNewNode(playboard_gn)
         playboard.setTwoSided(True)
         playboard.setPos(0, 0, 0)
         playboard.setScale(scalar, scalar, scalar)
         playboard.setColor(*playground_color)
 
-        print(self.bitmap.shape)
         self.add_cube(ref=playboard, loc=(39, 39))
         self.add_cube(ref=playboard, loc=(0, 0))
         self.add_cube(ref=playboard, loc=(0, 39))
@@ -204,6 +205,15 @@ class PandaViewer(ShowBase):
         # test color setup
         c: Tuple[int, int, int] = pColor(map_ref[1][-1])
         cube.setColor(*c)
+
+    def add_cube_by_spore(            
+            self,
+            ref: NodePath = None,
+            loc: Tuple[int, int] = (0, 0),
+            z_shift: float = None
+        ):
+        """Wrapper of add_cube() but with a Spore object."""
+        pass
 
 
 panda_viewer: PandaViewer = PandaViewer()
