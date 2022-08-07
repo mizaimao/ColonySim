@@ -1,7 +1,7 @@
 """Input interface to Colony instances.
 """
 import cv2
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from colony.configuration import res_cfg
 from colony.characters.colony import Colony
@@ -82,10 +82,25 @@ class ColonyCommander:
 
     def move_spore(
         self,
-        spore_id: int,
-        start: Tuple[int, int],
+        spore_id: Union[int, List[int]],
         dest: Tuple[int, int],
     ):
-        """Command a spore to move to a new location."""
-        
-        pass
+        """Command a spore to move to a new location.
+        This command will override spores' current routes.
+        """
+        # pointer to spore
+        spore: Spore = self.spore_man[spore_id]
+
+        # calculate route to destination
+        route: List[Tuple[int, int]] = bfs(
+            self.terrain_man.bitmap,
+            start=spore.pos,
+            end=dest,
+            step=self.colony.step,
+            diagonal_move=False,
+            spore_overlapping=False
+            )
+        if not route:  # empty route
+            return False
+        spore.route = route
+        return True
