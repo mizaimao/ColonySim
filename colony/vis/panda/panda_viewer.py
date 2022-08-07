@@ -1,4 +1,5 @@
 import sys
+from math import sqrt
 from typing import List, Sequence, Tuple
 
 import numpy as np
@@ -39,7 +40,7 @@ class PandaViewer(ShowBase):
         # playground object
         self.playboard: NodePath
         # playground size
-        self.pg_size: Tuple[int, int, int] = (8, 8, 2)
+        self.pg_size: Tuple[int, int, int] = (8, 8, 0.2)
         self.cube_x: float
         self.cube_y: float
         self.cube_z: float
@@ -72,10 +73,13 @@ class PandaViewer(ShowBase):
 
     def _init_camera(self):
         """Set up camera location and direction."""
+        scalar: float = 1.2
+        length: int = 5
+        #self.camera.setPos(length*scalar*sqrt(2), length*scalar*sqrt(2), length*scalar*sqrt(2))
         self.camera.setPos(0, 0, 20)
         self.camera.lookAt(0.0, 0.0, 0.0)
         self.camLens.setNearFar(1.0, 50.0)
-        self.camLens.setFov(45.0)
+        self.camLens.setFov(70.0)
         # Tilt the camera down by setting its pitch.
         #self.camera.setP(-90)
 
@@ -91,7 +95,8 @@ class PandaViewer(ShowBase):
             DirectionalLight("main light")
         )
         # Turn it around by 45 degrees, and tilt it down by 45 degrees
-        self.mainLight.setHpr(45, -45, 0)
+        #self.mainLight.setHpr(45, -45, 0)
+        self.mainLight.setHpr(60, -30, 0)
         self.render.setLight(self.mainLight)
 
     def _init_keys(self):
@@ -233,7 +238,7 @@ class PandaViewer(ShowBase):
             return
         
         spore_man: ColonySporeManager = self.colony.spore_man
-        for spore_id, spore in spore_man.spores.items():
+        for _, spore in spore_man.spores.items():
             self.add_cube_by_spore(spore, ref=self.playboard)
 
 
