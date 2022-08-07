@@ -4,10 +4,9 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Union
 
 from colony.configs.map_generator.ref import map_ref
+from colony.configuration import visual_cfg
 
-
-# no alpha channel
-STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = (202, 193, 103)  # color for stage level background
+STAGE_BACKGROUND: Union[int, Tuple[int, int, int]] = visual_cfg.stage_background
 
 
 class ColonyView(ABC):

@@ -3,7 +3,7 @@
 import yaml
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Optional, Union, Tuple
 
 from colony.generators.map_generator import GreenMapGenerator
 
@@ -52,8 +52,22 @@ class WorldSetup:
     viewer_width: int
     viewer_height: int
 
+world_visual_combined = yaml.safe_load(open(config_path.joinpath("world/default.yaml")))
+world_cfg = WorldSetup(**world_visual_combined["WORLD"])
 
-world_cfg = WorldSetup(**yaml.safe_load(open(config_path.joinpath("world/default.yaml"))))
+
+@dataclass
+class VisualSetup:
+    """Settings related to visual."""
+
+    stage_background: Union[int, Tuple[int, int, int]]
+
+    panda_width: Optional[int] = 800
+    panda_height: Optional[int] = 600
+    
+
+visual_cfg = VisualSetup(**world_visual_combined["VISUAL"])
+
 
 @dataclass
 class MapSetup:

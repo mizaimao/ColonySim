@@ -1,6 +1,14 @@
-setting_id: "Colony Sim Default"
-width: 40 
-height: 40
-viewer_width: 1920
-viewer_height: 1080 
-initial_population: 20
+WORLD:
+  setting_id: "Colony Sim Default"
+  width: 40 
+  height: 40
+  viewer_width: 1920
+  viewer_height: 1080 
+  initial_population: 20
+
+VISUAL:
+  stage_background: [202, 193, 103]
+
+  # configs for panda3d renderer
+  panda_width: 1280
+  panda_height: 800
