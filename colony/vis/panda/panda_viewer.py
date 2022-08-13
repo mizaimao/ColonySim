@@ -1,17 +1,20 @@
 import sys
-from math import sqrt
-from typing import List, Sequence, Tuple
+from typing import Dict, List, Sequence, Tuple
 
 import numpy as np
 
 from direct.showbase.ShowBase import ShowBase
-from panda3d.core import AmbientLight, DirectionalLight, Vec4, WindowProperties, GeomNode, NodePath
+from panda3d.core import AmbientLight, Camera, DirectionalLight, Vec4, WindowProperties, GeomNode, NodePath, OrthographicLens
 
 from colony.characters.colony import Colony
 from colony.configuration import visual_cfg, MapSetup, map_cfg
 from colony.configs.map_generator.ref import map_ref
 from colony.vis.panda.cube import make_a_cube, make_a_cuboid
 from colony.characters.spore import Spore, ColonySporeManager
+
+
+# center of playboard, used as a multi-purpose reference
+CENTER: Tuple[float, float, float] = (0, 0, 0)
 
 
 def pColor(color: Sequence[int], BGR: bool = True) -> List[int]:
@@ -24,6 +27,32 @@ def pColor(color: Sequence[int], BGR: bool = True) -> List[int]:
     if BGR:
         converted[0], converted[2] = converted[2], converted[0]
     return converted
+
+
+def calculate_dimetric_angle(
+        l: float,
+        reference: Tuple[float, float, float] = None,
+    ) -> Tuple[float, float, float]:
+    """
+    Calculate camera position given distance between camera and reference point.
+    """
+    if not reference:
+        reference = CENTER
+    sqrt_2: float = np.sqrt(2)
+    sqrt_6: float = np.sqrt(6)
+    # relative location to point (0, 0, 0)
+    rel_location: Tuple[float, float, float] = (
+        (sqrt_6 / 4) * l,
+        - (sqrt_6 / 4) * l,
+        l / 2
+    )
+    abs_location: Tuple[float, float, float] = (
+        rel_location[0] + reference[0],
+        rel_location[1] + reference[1],
+        rel_location[2] + reference[2]
+    )
+    print(abs_location)
+    return abs_location
 
 
 class PandaViewer(ShowBase):
@@ -44,6 +73,9 @@ class PandaViewer(ShowBase):
         self.cube_x: float
         self.cube_y: float
         self.cube_z: float
+
+        # tracker for each spore by their ids, used in operations like spore deletion
+        self.spore_tracker: Dict[int, NodePath] = {}
 
         # self.root = self.render.attachNewNode("Root")
         # self.root.setPos(0.0, 0.0, 0.0)
@@ -75,11 +107,19 @@ class PandaViewer(ShowBase):
         """Set up camera location and direction."""
         scalar: float = 1.2
         length: int = 5
-        #self.camera.setPos(length*scalar*sqrt(2), length*scalar*sqrt(2), length*scalar*sqrt(2))
-        self.camera.setPos(0, 0, 20)
-        self.camera.lookAt(0.0, 0.0, 0.0)
-        self.camLens.setNearFar(1.0, 50.0)
-        self.camLens.setFov(70.0)
+
+        # top-down view
+        # self.camera.setPos(0, 0, 20)
+        # self.camera.lookAt(0.0, 0.0, 0.0)
+
+        # dimetric view
+        dimetric_loc: Tuple[float, float, float] = calculate_dimetric_angle(l=12, reference=CENTER)
+        self.camera.setPos(*dimetric_loc)
+        self.camera.lookAt(*CENTER)
+
+
+        #self.camLens.setNearFar(1.0, 50.0)
+        self.camLens.setFov(90.0)
         # Tilt the camera down by setting its pitch.
         #self.camera.setP(-90)
 
@@ -165,7 +205,7 @@ class PandaViewer(ShowBase):
             loc: Tuple[int, int] = (0, 0),
             color: Tuple[float, float, float, float] = (1., 0., 0., 1.),
             z_shift: float = None,
-        ):
+        ) -> NodePath:
         """
         Add a single cube/cuboid onto playground.
         
@@ -175,6 +215,9 @@ class PandaViewer(ShowBase):
             z_shift: Usually positve, such that the cube would appear to be
                 sitting above the playground. If None was given, it will use
                 height of playground so that cubes will be right above board.
+
+        Returns
+            NodePath: Object pointer.
         """
         # if reference object is None, then use the render itself as root
         if ref is None:
@@ -210,6 +253,12 @@ class PandaViewer(ShowBase):
         # test color setup
         #c: Tuple[int, int, int] = 
         cube.setColor(*color)
+        return cube
+
+    def remove_spore_by_id(self, spore_id: int):
+        """Remove a NodePath representitive of a spore by using its id."""
+        spore_np: NodePath = self.spore_tracker[spore_id]
+        spore_np.detachNode()
 
     def add_cube_by_spore(            
             self,
@@ -221,7 +270,8 @@ class PandaViewer(ShowBase):
         loc: Tuple[int, int] = spore.pos
 
         color: Tuple[float, ...] = pColor(map_ref[spore.sex][-1])
-        self.add_cube(ref=ref, loc=loc, color=color, z_shift=z_shift)
+        cube: NodePath = self.add_cube(ref=ref, loc=loc, color=color, z_shift=z_shift)
+        self.spore_tracker[spore.sid] = cube
 
     def add_initial_players(self):
         """Add inital batch of spores."""
