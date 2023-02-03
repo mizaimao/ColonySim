@@ -6,8 +6,8 @@ from typing import Dict, Set, Tuple
 STRUCTURE_PREFIX: int = 7
 # buildale tiles
 BUILDABLE: Set[int] = {101, }
-# passiable tiles
-PASSABLE: Set[int] = {101, }
+# passiable tiles; tiles not in this set won't allow spores to step on
+PASSABLE: Set[int] = {101, 111, 7110, 7210}
 
 # NOTE: color codes are in RGB
 map_ref: Dict[int, Tuple] = {

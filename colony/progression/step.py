@@ -110,6 +110,9 @@ def get_next_coor(
     """
     Generate the coor of the next step. Only returns valid coor.
     """
+    debug_counter: int = 0
+    tolerance: int = 10000
+
     while True: # do-while loop in python
         new_coor = spore_step(direction = next_direction, current_coor = current_coor)
         if validate_coor(
@@ -120,5 +123,10 @@ def get_next_coor(
                 step=step
             ):
             break
+        debug_counter += 1
+        if debug_counter >= tolerance:
+            raise ValueError(
+                f"It took more than {tolerance} steps to find a next direction for a spore."
+            )
         next_direction = get_direction(size=1)
     return new_coor

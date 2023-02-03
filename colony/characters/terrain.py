@@ -17,6 +17,19 @@ class TerrainManager:
         self.bitmap: np.ndarray = bitmap
         self.height, self.width = self.bitmap.shape
 
+        print("chicken")
+        self.bitmap_override()
+        print("chicken done")
+
+    def bitmap_override(self):
+        """Debugging function to forcefully modify the bitmap."""
+        magic_size: int = 7
+        self.bitmap[0: magic_size, 0: magic_size] = 301
+        self.bitmap[-magic_size: , -magic_size: ] = 7110
+        self.bitmap[-magic_size: , 0: magic_size] = 7210
+        self.bitmap[0: magic_size, -magic_size: ] = 111
+
+
     def add_building(
         self,
         start: Tuple[int, int],
